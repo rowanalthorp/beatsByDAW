@@ -7,7 +7,6 @@ In the application we will offer:
   * Piano
   * Guitar
   * Drums
-  * USB Audio from real instruments onto MIDI Input (stretch, probably not doing this)
 * Audio manipulation: 
   * Cut, trim, split, and rearrange audio clips
   * Adjust volume and panning
