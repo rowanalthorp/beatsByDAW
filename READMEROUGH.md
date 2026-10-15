@@ -1,5 +1,4 @@
 # beatsByDAW
-a project for CSC475
 
 beatsByDAW aims to provide a simple, flexible environment where musicians can create, edit, and mix their own tunes. <br><br>
 In the application we will offer:
@@ -43,6 +42,7 @@ beatsByDAW will provide the core tools and the other jazzy stuff one would want 
 * MDB-stem-synth [15]: solo stems with exact f0 annotations, used to evaluate pitch detection and pitch correction (Obj. 5)
 
 ## Objectives
+
 
 ### Objective 1: Timeline and editing interface - Brett
 * Objective (implement the multi-track timeline UI and clip editing workflow in Godot)
@@ -93,7 +93,10 @@ beatsByDAW will provide the core tools and the other jazzy stuff one would want 
   * PI5 (advanced): transient preservation by splitting harmonic/percussive components (HPSS) and stretching each with the appropriate method
 
 ## Timeline
-* Week 1:
+* Week 1-2: Objecitves 1-3 (Basic, Expected, Advanced)
+* Week 3-4: Objectives 4-6 (Basic, Expected)
+* Week 5: Objectives 4-6 (Addvanced)
+* Week 6: Final Preperations
 
 ## Related Work
 
