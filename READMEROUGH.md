@@ -95,7 +95,7 @@ beatsByDAW will provide the core tools and the other jazzy stuff one would want 
 ## Timeline
 * Week 1-2: Objecitves 1-3 (Basic, Expected, Advanced)
 * Week 3-4: Objectives 4-6 (Basic, Expected)
-* Week 5: Objectives 4-6 (Addvanced)
+* Week 5: Objectives 4-6 (Advanced)
 * Week 6: Final Preperations
 
 ## Related Work
