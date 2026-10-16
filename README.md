@@ -1,6 +1,10 @@
 # beatsByDAW
 
-beatsByDAW aims to provide a simple, flexible environment where musicians can create, edit, and mix their own tunes. <br><br>
+## Project Description
+Modern DAWs like Reaper and FL Studio come with hundreds of features targeting professional and power users, yet the average musician only ever touches a small fraction of them. As a result, cluttered interfaces and steep learning curves get in the way of actually making music. At the same time, constraints are a well-known driver of creativity; a focused toolset often leads to faster workflows and more finished tracks.
+
+beatsByDAW is a deliberately simplified digital audio workstation that aims to provide everything needed to create, edit, mix music and nothing more.
+<br><br>
 In the application we will offer:
 * Virtual Instruments, able to tune and all that jazz
   * Piano
@@ -29,10 +33,10 @@ In the application we will offer:
 (NOTE: probably some stuff will have to cut for scope)
 <br><br>
 
-beatsByDAW will provide the core tools and the other jazzy stuff one would want when putting together their own tunes. The plan is to build the application in Godot, primarily because we are more experienced in it and it handles the more tedious aspects such as UI, allowing us to focus more on the audio and music parts. The backend would be using the C++ GDE extension for better performance.
+beatsByDAW will provide the core tools to put together a track from start to finish. We plan to build the application in Godot, primarily because it's the engine we have the most experience with and it handles the more tedious aspects like UI, letting us focus on the audio and musical information retrieval components. The backend will use a C++ GDExtension for better performance.
 
 ## Tools
-* Godot 4 (UI, timeline, editors)
+* Godot 4.7.2 (UI, timeline, editors)
 * godot-cpp (https://github.com/godotengine/godot-cpp): C++ bindings for the GDExtension backend (audio engine, DSP, analysis)
 * Python with librosa (https://librosa.org) and mir_eval [16]: offline evaluation of the analysis and time-stretch objectives
 * FMP notebooks [17]: Python reference implementations used as baselines while writing the C++ versions
