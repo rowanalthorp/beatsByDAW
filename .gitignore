@@ -23,3 +23,23 @@ mono_crash.*.json
 *.exe
 # Uncomment if your project does not version PCK files as runtime dependencies.
 # *.pck
+
+# ==========================================
+# GDExtension & C++ (SCons) Build Artifacts
+# ==========================================
+# SCons database & object files
+.sconsign.dblite
+*.o
+*.os
+*.obj
+*.exp
+*.lib
+
+# godot-cpp bindings build cache & generated code
+godot-cpp/bin/
+godot-cpp/gen/
+
+# Compiled extension binaries (uncomment if you want teammates to build local binaries instead of tracking them)
+# bin/*.dll
+# bin/*.so
+# bin/*.dylib
