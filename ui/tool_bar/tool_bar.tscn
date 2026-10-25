@@ -1,0 +1,221 @@
+[gd_scene format=3 uid="uid://cxvlv1by4lgbe"]
+
+[ext_resource type="Texture2D" uid="uid://o37erm0q5qe3" path="res://assets/icons/tool_bar/pause.svg" id="1_aexei"]
+[ext_resource type="Texture2D" uid="uid://qewtkaslhs70" path="res://assets/icons/tool_bar/play.svg" id="2_q2wek"]
+[ext_resource type="Texture2D" uid="uid://b3xc4naunoo0h" path="res://assets/icons/tool_bar/stop.svg" id="3_j0tcb"]
+[ext_resource type="Texture2D" uid="uid://b03huwhfpdcyn" path="res://assets/icons/tool_bar/skip-back.svg" id="4_lyjna"]
+[ext_resource type="Texture2D" uid="uid://mk06jtbenyuh" path="res://assets/icons/tool_bar/skip-forward.svg" id="5_g2ni2"]
+[ext_resource type="Texture2D" uid="uid://ci1ae2fdloimh" path="res://assets/icons/tool_bar/record.svg" id="6_tck8x"]
+[ext_resource type="Texture2D" uid="uid://iwte8dyufanc" path="res://assets/icons/tool_bar/repeat.svg" id="7_vfwye"]
+[ext_resource type="Texture2D" uid="uid://conkp0l5kbq6h" path="res://assets/icons/tool_bar/select.svg" id="8_8fwrc"]
+[ext_resource type="Texture2D" uid="uid://cc7dtwj6qflr0" path="res://assets/icons/tool_bar/split.svg" id="9_pvmn6"]
+[ext_resource type="Texture2D" uid="uid://b2g8iraa5xi21" path="res://assets/icons/tool_bar/cut.svg" id="10_hri0f"]
+[ext_resource type="Texture2D" uid="uid://dhdfmnbhtb7su" path="res://assets/icons/tool_bar/copy.svg" id="11_hf6eo"]
+[ext_resource type="Texture2D" uid="uid://cn8id6p0mo7ui" path="res://assets/icons/tool_bar/paste.svg" id="12_jy2i2"]
+[ext_resource type="Texture2D" uid="uid://cra2ci142cdkg" path="res://assets/icons/tool_bar/undo.svg" id="13_j6qq2"]
+[ext_resource type="Texture2D" uid="uid://bo3xafqgm3foh" path="res://assets/icons/tool_bar/redo.svg" id="14_cnck0"]
+[ext_resource type="Texture2D" uid="uid://drbv1j26p26gx" path="res://assets/icons/tool_bar/zoom-in.svg" id="15_02ift"]
+[ext_resource type="Texture2D" uid="uid://ddmsjpqcdqe6g" path="res://assets/icons/tool_bar/zoom-out.svg" id="16_xvrtt"]
+[ext_resource type="Texture2D" uid="uid://dhkaqunh8cipk" path="res://assets/icons/tool_bar/expand.svg" id="17_36s25"]
+[ext_resource type="Texture2D" uid="uid://4qo8qrk0iydx" path="res://assets/icons/tool_bar/import.svg" id="18_w76n2"]
+[ext_resource type="Texture2D" uid="uid://y2x485omorfj" path="res://assets/icons/tool_bar/add-track.svg" id="19_5olmx"]
+[ext_resource type="Texture2D" uid="uid://dcgromlfpscnh" path="res://assets/icons/tool_bar/export.svg" id="20_ajbqv"]
+
+[node name="ToolBar" type="HBoxContainer" unique_id=831185271]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 50.0
+grow_horizontal = 2
+
+[node name="PlaybackGroup" type="HBoxContainer" parent="." unique_id=1584876392]
+layout_mode = 2
+
+[node name="Pause" type="Button" parent="PlaybackGroup" unique_id=1601447684]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+tooltip_text = "Pause"
+focus_mode = 0
+theme_override_constants/icon_max_width = 25
+icon = ExtResource("1_aexei")
+icon_alignment = 1
+
+[node name="Play" type="Button" parent="PlaybackGroup" unique_id=2108715902]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+tooltip_text = "Play"
+theme_override_constants/icon_max_width = 25
+icon = ExtResource("2_q2wek")
+icon_alignment = 1
+
+[node name="Stop" type="Button" parent="PlaybackGroup" unique_id=195225314]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+tooltip_text = "Stop"
+theme_override_constants/icon_max_width = 25
+icon = ExtResource("3_j0tcb")
+icon_alignment = 1
+
+[node name="ToStart" type="Button" parent="PlaybackGroup" unique_id=51008249]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+theme_override_constants/icon_max_width = 25
+icon = ExtResource("4_lyjna")
+icon_alignment = 1
+
+[node name="ToEnd" type="Button" parent="PlaybackGroup" unique_id=333888890]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+theme_override_constants/icon_max_width = 25
+icon = ExtResource("5_g2ni2")
+icon_alignment = 1
+
+[node name="Record" type="Button" parent="PlaybackGroup" unique_id=1710177702]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+theme_override_constants/icon_max_width = 25
+icon = ExtResource("6_tck8x")
+icon_alignment = 1
+
+[node name="Loop" type="Button" parent="PlaybackGroup" unique_id=90136765]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+theme_override_constants/icon_max_width = 25
+icon = ExtResource("7_vfwye")
+icon_alignment = 1
+
+[node name="VSeparator" type="VSeparator" parent="." unique_id=488404496]
+layout_mode = 2
+
+[node name="ToolGroup" type="VBoxContainer" parent="." unique_id=1351243770]
+layout_mode = 2
+
+[node name="Select" type="Button" parent="ToolGroup" unique_id=1027139811]
+custom_minimum_size = Vector2(23, 23)
+layout_mode = 2
+tooltip_text = "Select"
+icon = ExtResource("8_8fwrc")
+expand_icon = true
+
+[node name="Split" type="Button" parent="ToolGroup" unique_id=1085759804]
+custom_minimum_size = Vector2(23, 23)
+layout_mode = 2
+tooltip_text = "Split"
+icon = ExtResource("9_pvmn6")
+icon_alignment = 1
+expand_icon = true
+
+[node name="VSeparator2" type="VSeparator" parent="." unique_id=846512453]
+layout_mode = 2
+
+[node name="EditGroup" type="GridContainer" parent="." unique_id=443021714]
+layout_mode = 2
+columns = 3
+
+[node name="Cut" type="Button" parent="EditGroup" unique_id=2038688666]
+custom_minimum_size = Vector2(23, 23)
+layout_mode = 2
+tooltip_text = "Cut"
+icon = ExtResource("10_hri0f")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Copy" type="Button" parent="EditGroup" unique_id=946709897]
+custom_minimum_size = Vector2(23, 23)
+layout_mode = 2
+tooltip_text = "Copy"
+icon = ExtResource("11_hf6eo")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Paste" type="Button" parent="EditGroup" unique_id=454577106]
+custom_minimum_size = Vector2(23, 23)
+layout_mode = 2
+tooltip_text = "Paste"
+icon = ExtResource("12_jy2i2")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Undo" type="Button" parent="EditGroup" unique_id=1468919931]
+custom_minimum_size = Vector2(23, 23)
+layout_mode = 2
+tooltip_text = "Undo"
+icon = ExtResource("13_j6qq2")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Redo" type="Button" parent="EditGroup" unique_id=2006490615]
+custom_minimum_size = Vector2(23, 0)
+layout_mode = 2
+tooltip_text = "Redo"
+icon = ExtResource("14_cnck0")
+icon_alignment = 1
+expand_icon = true
+
+[node name="VSeparator3" type="VSeparator" parent="." unique_id=1610105177]
+layout_mode = 2
+
+[node name="ZoomGroup" type="GridContainer" parent="." unique_id=1553679985]
+layout_mode = 2
+columns = 2
+
+[node name="ZoomIn" type="Button" parent="ZoomGroup" unique_id=1347024175]
+custom_minimum_size = Vector2(23, 23)
+layout_mode = 2
+tooltip_text = "Zoom In"
+icon = ExtResource("15_02ift")
+icon_alignment = 1
+expand_icon = true
+
+[node name="ZoomOut" type="Button" parent="ZoomGroup" unique_id=597698981]
+custom_minimum_size = Vector2(23, 23)
+layout_mode = 2
+tooltip_text = "Zoom Out"
+icon = ExtResource("16_xvrtt")
+icon_alignment = 1
+expand_icon = true
+
+[node name="ZoomFit" type="Button" parent="ZoomGroup" unique_id=1410664041]
+custom_minimum_size = Vector2(23, 23)
+layout_mode = 2
+tooltip_text = "Fit to Screen"
+icon = ExtResource("17_36s25")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Control" type="Control" parent="." unique_id=1702908099]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ProjectGroup" type="HBoxContainer" parent="." unique_id=907239654]
+layout_mode = 2
+
+[node name="ImportAudio" type="Button" parent="ProjectGroup" unique_id=650143219]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+tooltip_text = "Import Audio"
+focus_mode = 0
+theme_override_constants/icon_max_width = 25
+icon = ExtResource("18_w76n2")
+icon_alignment = 1
+
+[node name="AddTrack" type="MenuButton" parent="ProjectGroup" unique_id=823012153]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+tooltip_text = "Add Track"
+theme_override_constants/icon_max_width = 25
+icon = ExtResource("19_5olmx")
+flat = false
+icon_alignment = 1
+item_count = 2
+popup/item_0/text = "Add Audio Track"
+popup/item_0/id = 0
+popup/item_1/text = "Add Instrument Track"
+popup/item_1/id = 1
+
+[node name="Export" type="Button" parent="ProjectGroup" unique_id=212388507]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+tooltip_text = "Export"
+theme_override_constants/icon_max_width = 25
+icon = ExtResource("20_ajbqv")
+icon_alignment = 1
