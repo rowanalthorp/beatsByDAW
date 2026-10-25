@@ -12,6 +12,8 @@ env = SConscript("godot-cpp/SConstruct")
 # List all your C++ source files here for Rowan's backend
 sources = [
     # Add future backend files here (e.g., "src/effects_chain.cpp")
+    "src/register_types.cpp",
+    "src/test_cpp.cpp",
 ]
 
 # Build the shared library depending on the target platform
@@ -21,7 +23,7 @@ if env["platform"] == "windows":
         "bin/daw_backend.windows.template_debug.x86_64.dll",
         source=sources,
     )
-elif env["platform"] == "linuxbsd":
+elif env["platform"] == "linux":
     library = env.SharedLibrary(
         "bin/daw_backend.linux.template_debug.x86_64.so",
         source=sources,
