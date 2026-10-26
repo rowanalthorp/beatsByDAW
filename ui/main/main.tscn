@@ -79,12 +79,12 @@ layout_mode = 2
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 
-[node name="Panel" type="Panel" parent="Layout/MainSplit/Timeline/RulerRow" unique_id=1317750034]
+[node name="Ruler" type="Panel" parent="Layout/MainSplit/Timeline/RulerRow" unique_id=1317750034]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Label" type="Label" parent="Layout/MainSplit/Timeline/RulerRow/Panel" unique_id=1721208969]
+[node name="RulerText" type="Label" parent="Layout/MainSplit/Timeline/RulerRow/Ruler" unique_id=1721208969]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -106,26 +106,26 @@ grow_horizontal = 2
 grow_vertical = 2
 horizontal_scroll_mode = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Layout/MainSplit/Timeline/Body/TrackScroll" unique_id=337910414]
+[node name="TrackList" type="VBoxContainer" parent="Layout/MainSplit/Timeline/Body/TrackScroll" unique_id=337910414]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TrackRow" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=37634068 instance=ExtResource("3_ircy7")]
+[node name="TrackRow" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=37634068 instance=ExtResource("3_ircy7")]
 layout_mode = 2
 
-[node name="TrackRow2" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=1395615046 instance=ExtResource("3_ircy7")]
+[node name="TrackRow2" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=1395615046 instance=ExtResource("3_ircy7")]
 layout_mode = 2
 
-[node name="TrackRow3" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=2086327121 instance=ExtResource("3_ircy7")]
+[node name="TrackRow3" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=2086327121 instance=ExtResource("3_ircy7")]
 layout_mode = 2
 
-[node name="TrackRow4" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=699758604 instance=ExtResource("3_ircy7")]
+[node name="TrackRow4" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=699758604 instance=ExtResource("3_ircy7")]
 layout_mode = 2
 
-[node name="TrackRow5" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=650778857 instance=ExtResource("3_ircy7")]
+[node name="TrackRow5" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=650778857 instance=ExtResource("3_ircy7")]
 layout_mode = 2
 
-[node name="TrackRow6" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=294795700 instance=ExtResource("3_ircy7")]
+[node name="TrackRow6" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=294795700 instance=ExtResource("3_ircy7")]
 layout_mode = 2
 
 [node name="Playhead" type="ColorRect" parent="Layout/MainSplit/Timeline/Body" unique_id=2065215905]
