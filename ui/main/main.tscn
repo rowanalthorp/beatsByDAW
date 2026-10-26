@@ -2,6 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://sggny4g86jsp" path="res://ui/styles/main_theme.tres" id="1_3a1op"]
 [ext_resource type="PackedScene" uid="uid://cxvlv1by4lgbe" path="res://ui/tool_bar/tool_bar.tscn" id="2_7mc2q"]
+[ext_resource type="Script" uid="uid://dsqeesi15cbf7" path="res://ui/main/main.gd" id="2_ubw8e"]
 [ext_resource type="PackedScene" uid="uid://cb2fnbbe4i6kj" path="res://ui/timeline/track_row.tscn" id="3_ircy7"]
 [ext_resource type="Texture2D" uid="uid://psegxtr6qg4v" path="res://assets/icons/x.svg" id="4_i5l5t"]
 [ext_resource type="PackedScene" uid="uid://7k8gnec5d1ko" path="res://ui/project_bar/project_bar.tscn" id="4_ye4sr"]
@@ -15,6 +16,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1_3a1op")
+script = ExtResource("2_ubw8e")
 
 [node name="Layout" type="VBoxContainer" parent="." unique_id=443464034]
 layout_mode = 1
@@ -142,6 +144,7 @@ color = Color(0.29803923, 0.8509804, 0.39215687, 1)
 layout_mode = 2
 
 [node name="EffectsSidebar" type="PanelContainer" parent="Layout/MainSplit" unique_id=376513993]
+visible = false
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 
