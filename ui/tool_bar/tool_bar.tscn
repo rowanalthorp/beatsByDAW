@@ -173,7 +173,7 @@ icon = ExtResource("17_36s25")
 icon_alignment = 1
 expand_icon = true
 
-[node name="Control" type="Control" parent="." unique_id=1702908099]
+[node name="Spacer" type="Control" parent="." unique_id=1702908099]
 layout_mode = 2
 size_flags_horizontal = 3
 

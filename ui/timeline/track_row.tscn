@@ -33,7 +33,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Drums"
 
-[node name="Button" type="Button" parent="Header/VBox/TopRow" unique_id=795103281]
+[node name="DeleteButton" type="Button" parent="Header/VBox/TopRow" unique_id=795103281]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 icon = ExtResource("2_kex6r")
@@ -83,7 +83,7 @@ layout_mode = 2
 text = "L"
 horizontal_alignment = 1
 
-[node name="HSlider" type="HSlider" parent="Header/VBox/PanRow" unique_id=1886643417]
+[node name="PanSlider" type="HSlider" parent="Header/VBox/PanRow" unique_id=1886643417]
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = -1.0
