@@ -1,0 +1,27 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/piano_roll_window.gd" id="1_win"]
+[ext_resource type="Script" path="res://scripts/piano_roll.gd" id="2_roll"]
+
+[node name="PianoRollWindow" type="Window"]
+title = "Piano Roll — Piano"
+position = Vector2i(80, 50)
+size = Vector2i(1150, 660)
+visible = false
+transient = true
+script = ExtResource("1_win")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Scroll" type="ScrollContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PianoRoll" type="Control" parent="VBox/Scroll"]
+layout_mode = 2
+script = ExtResource("2_roll")
