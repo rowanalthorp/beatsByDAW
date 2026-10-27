@@ -13,6 +13,7 @@ const BEAT_WIDTH := 48.0
 const BEATS_PER_BAR := 4
 const BARS := 8
 const SNAP := 0.5
+const RESIZE_MARGIN := 7.0
 const PITCH_LOW := 36 ## C2
 const PITCH_HIGH := 96 ## C7
 const BLACK_PITCHES := [1, 3, 6, 8, 10]
@@ -22,6 +23,7 @@ var show_playhead := false
 var playhead_beat := 0.0
 
 var _preview_pitch := -1
+var _resize_note := -1
 
 
 func _ready() -> void:
@@ -38,41 +40,56 @@ func clear_notes() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	var mb := event as InputEventMouseButton
-	if not mb:
-		return
-	if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
-		accept_event()
-		var pos := mb.position
-		if pos.x < KEY_WIDTH:
-			_preview_pitch = _pitch_at(pos.y)
-			preview_note_on.emit(_preview_pitch)
-			return
-		var idx := _note_at(pos)
-		if idx == -1:
-			idx = _add_note(_beat_at(pos.x), _pitch_at(pos.y))
-			queue_redraw()
-		preview_note_on.emit(notes[idx].pitch)
-	elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
-		accept_event()
-		var idx := _note_at(mb.position)
-		if idx != -1:
-			notes.remove_at(idx)
-			queue_redraw()
+	if mb:
+		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
+			accept_event()
+			var pos := mb.position
+			if pos.x < KEY_WIDTH:
+				_preview_pitch = _pitch_at(pos.y)
+				preview_note_on.emit(_preview_pitch)
+				return
+			var idx := _note_at(pos)
+			if idx == -1:
+				idx = _add_note(_beat_at(pos.x), _pitch_at(pos.y))
+				queue_redraw()
+			elif _near_right_edge(notes[idx], pos.x):
+				_resize_note = idx
+			preview_note_on.emit(notes[idx].pitch)
+		elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
+			accept_event()
+			var idx := _note_at(mb.position)
+			if idx != -1:
+				notes.remove_at(idx)
+				queue_redraw()
+	elif event is InputEventMouseMotion:
+		# Resize cursor when hovering the right edge of a note
+		var idx := _note_at(event.position)
+		var near := idx != -1 and _near_right_edge(notes[idx], event.position.x)
+		mouse_default_cursor_shape = CURSOR_HSIZE if near else CURSOR_ARROW
 
 
-# Release and preview-slide handled here instead of _gui_input so they
-# still work when the cursor leaves the control.
+# Drag and release handled here instead of _gui_input so they still work
+# when the cursor leaves the control.
 func _input(event: InputEvent) -> void:
-	if _preview_pitch == -1:
-		return
 	var mb := event as InputEventMouseButton
 	if mb and mb.button_index == MOUSE_BUTTON_LEFT and not mb.pressed:
-		preview_note_off.emit(_preview_pitch)
-		_preview_pitch = -1
+		if _preview_pitch != -1:
+			preview_note_off.emit(_preview_pitch)
+			_preview_pitch = -1
+		_resize_note = -1
 		return
 	if event is InputEventMouseMotion:
 		var pos := get_local_mouse_position()
-		if pos.x < KEY_WIDTH:
+		if _resize_note != -1:
+			if _resize_note >= notes.size():
+				_resize_note = -1
+				return
+			var n := notes[_resize_note]
+			var end := clampf(
+				snappedf(_beat_at(pos.x), SNAP), 0.0, float(BARS * BEATS_PER_BAR))
+			n.length = clampf(end - n.start, SNAP, BARS * BEATS_PER_BAR - n.start)
+			queue_redraw()
+		elif _preview_pitch != -1 and pos.x < KEY_WIDTH:
 			var p := _pitch_at(pos.y)
 			if p != _preview_pitch:
 				preview_note_off.emit(_preview_pitch)
@@ -136,6 +153,8 @@ func _draw() -> void:
 	for i in notes.size():
 		var rect := _note_rect(notes[i])
 		var col := Color(0.35, 0.65, 0.98)
+		if i == _resize_note:
+			col = col.lightened(0.25)
 		draw_rect(rect, col)
 		draw_rect(rect, col.darkened(0.45), false, 1.5)
 
@@ -162,6 +181,11 @@ func _beat_at(x: float) -> float:
 
 func _snap_floor(b: float) -> float:
 	return clampf(floor(b / SNAP) * SNAP, 0.0, float(BARS * BEATS_PER_BAR))
+
+
+func _near_right_edge(n: Dictionary, x: float) -> bool:
+	var edge: float = KEY_WIDTH + (n.start + n.length) * BEAT_WIDTH
+	return edge - x <= RESIZE_MARGIN
 
 
 func _add_note(beat: float, pitch: int) -> int:
