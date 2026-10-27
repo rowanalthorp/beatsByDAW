@@ -24,6 +24,9 @@ var playhead_beat := 0.0
 
 var _preview_pitch := -1
 var _resize_note := -1
+var _move_note := -1
+var _grab_beat_offset := 0.0
+var _grab_pitch_offset := 0
 
 
 func _ready() -> void:
@@ -51,9 +54,16 @@ func _gui_input(event: InputEvent) -> void:
 			var idx := _note_at(pos)
 			if idx == -1:
 				idx = _add_note(_beat_at(pos.x), _pitch_at(pos.y))
+				_move_note = idx
+				_grab_beat_offset = _beat_at(pos.x) - notes[idx].start
+				_grab_pitch_offset = 0
 				queue_redraw()
 			elif _near_right_edge(notes[idx], pos.x):
 				_resize_note = idx
+			else:
+				_move_note = idx
+				_grab_beat_offset = _beat_at(pos.x) - notes[idx].start
+				_grab_pitch_offset = notes[idx].pitch - _pitch_at(pos.y)
 			preview_note_on.emit(notes[idx].pitch)
 		elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
 			accept_event()
@@ -62,10 +72,14 @@ func _gui_input(event: InputEvent) -> void:
 				notes.remove_at(idx)
 				queue_redraw()
 	elif event is InputEventMouseMotion:
-		# Resize cursor when hovering the right edge of a note
+		# Cursor hints, resize on the right edge and move on the body
 		var idx := _note_at(event.position)
-		var near := idx != -1 and _near_right_edge(notes[idx], event.position.x)
-		mouse_default_cursor_shape = CURSOR_HSIZE if near else CURSOR_ARROW
+		if idx == -1:
+			mouse_default_cursor_shape = CURSOR_ARROW
+		elif _near_right_edge(notes[idx], event.position.x):
+			mouse_default_cursor_shape = CURSOR_HSIZE
+		else:
+			mouse_default_cursor_shape = CURSOR_MOVE
 
 
 # Drag and release handled here instead of _gui_input so they still work
@@ -77,6 +91,7 @@ func _input(event: InputEvent) -> void:
 			preview_note_off.emit(_preview_pitch)
 			_preview_pitch = -1
 		_resize_note = -1
+		_move_note = -1
 		return
 	if event is InputEventMouseMotion:
 		var pos := get_local_mouse_position()
@@ -88,6 +103,16 @@ func _input(event: InputEvent) -> void:
 			var end := clampf(
 				snappedf(_beat_at(pos.x), SNAP), 0.0, float(BARS * BEATS_PER_BAR))
 			n.length = clampf(end - n.start, SNAP, BARS * BEATS_PER_BAR - n.start)
+			queue_redraw()
+		elif _move_note != -1:
+			if _move_note >= notes.size():
+				_move_note = -1
+				return
+			var n := notes[_move_note]
+			n.start = _snap_floor(_beat_at(pos.x) - _grab_beat_offset)
+			n.start = minf(n.start, BARS * BEATS_PER_BAR - n.length)
+			n.pitch = clampi(
+				_pitch_at(pos.y) + _grab_pitch_offset, PITCH_LOW, PITCH_HIGH)
 			queue_redraw()
 		elif _preview_pitch != -1 and pos.x < KEY_WIDTH:
 			var p := _pitch_at(pos.y)
@@ -153,7 +178,7 @@ func _draw() -> void:
 	for i in notes.size():
 		var rect := _note_rect(notes[i])
 		var col := Color(0.35, 0.65, 0.98)
-		if i == _resize_note:
+		if i == _resize_note or i == _move_note:
 			col = col.lightened(0.25)
 		draw_rect(rect, col)
 		draw_rect(rect, col.darkened(0.45), false, 1.5)

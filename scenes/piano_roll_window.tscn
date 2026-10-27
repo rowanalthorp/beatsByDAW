@@ -47,7 +47,7 @@ size_flags_horizontal = 3
 
 [node name="HintLabel" type="Label" parent="VBox/Toolbar"]
 layout_mode = 2
-text = "LMB: place | drag right edge: resize | RMB: delete | keys: preview"
+text = "LMB: place/drag | drag right edge: resize | RMB: delete | keys: preview"
 
 [node name="Scroll" type="ScrollContainer" parent="VBox"]
 layout_mode = 2
