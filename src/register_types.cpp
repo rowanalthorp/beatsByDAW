@@ -1,4 +1,5 @@
 #include "test_cpp.h"
+#include "audio_engine/audio_engine.h"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -15,6 +16,7 @@ void initialize_daw_module(ModuleInitializationLevel p_level) {
 
     UtilityFunctions::print("--- C++ GDExtension INITIALIZED SUCCESSFULLY ---");
     GDREGISTER_RUNTIME_CLASS(TestCPP);
+    GDREGISTER_RUNTIME_CLASS(AudioEngine);
 }
 
 void uninitialize_daw_module(ModuleInitializationLevel p_level) {
