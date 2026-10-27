@@ -62,6 +62,13 @@ item_0/id = 0
 item_1/text = "Add Instrument Track"
 item_1/id = 1
 
+[node name="View" type="PopupMenu" parent="Layout/MenuBar" unique_id=1924241342]
+unique_name_in_owner = true
+item_count = 1
+item_0/text = "Light Theme"
+item_0/checkable = 1
+item_0/id = 0
+
 [node name="ToolBar" parent="Layout" unique_id=831185271 instance=ExtResource("2_7mc2q")]
 layout_mode = 2
 
