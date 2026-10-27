@@ -1,8 +1,7 @@
 class_name PianoSynth
 extends AudioStreamPlayer
-## Synthesized piano, polyphonic.
-## Each note is a sum of decaying harmonics with a fast attack,
-## no samples needed.
+## Synthesized piano
+## Each note is a sum of decaying harmonics with a fast attack
 
 const MIX_RATE := 44100.0
 const MAX_VOICES := 16
@@ -11,7 +10,6 @@ const RELEASE := 0.07
 const MAX_VOICE_AGE := 8.0
 const MASTER_GAIN := 0.3
 
-## [partial multiplier, amplitude, decay multiplier]
 ## higher partials decay faster, like a real piano
 const PARTIALS := [
 	[1.0, 1.00, 1.00],
@@ -33,7 +31,7 @@ func _ready() -> void:
 
 
 func note_on(pitch: int, velocity: float = 1.0) -> void:
-	# Re-triggering a held pitch fades the old voice out instead of stacking
+	# Retriggering a held pitch fades the old voice out instead of stacking
 	for v in _voices:
 		if v.pitch == pitch and not v.releasing:
 			v.releasing = true

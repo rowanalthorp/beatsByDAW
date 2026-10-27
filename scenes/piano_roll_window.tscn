@@ -26,6 +26,17 @@ theme_override_constants/separation = 8
 layout_mode = 2
 text = "Play"
 
+[node name="BpmLabel" type="Label" parent="VBox/Toolbar"]
+layout_mode = 2
+text = "BPM:"
+
+[node name="BpmSpin" type="SpinBox" parent="VBox/Toolbar"]
+layout_mode = 2
+min_value = 40.0
+max_value = 240.0
+step = 1.0
+value = 120.0
+
 [node name="ClearButton" type="Button" parent="VBox/Toolbar"]
 layout_mode = 2
 text = "Clear"

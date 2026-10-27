@@ -2,8 +2,6 @@ extends Window
 ## Popup window with the piano roll editor and piano instrument.
 ## Play/stop transport and schedules notes on the synth.
 
-const BPM := 120.0
-
 var _synth: PianoSynth
 var _playing := false
 var _playhead := 0.0
@@ -11,6 +9,7 @@ var _sounding: Array[bool] = []
 
 @onready var _roll: PianoRoll = $VBox/Scroll/PianoRoll
 @onready var _play_button: Button = $VBox/Toolbar/PlayButton
+@onready var _bpm_spin: SpinBox = $VBox/Toolbar/BpmSpin
 @onready var _clear_button: Button = $VBox/Toolbar/ClearButton
 
 
@@ -46,7 +45,7 @@ func _process(delta: float) -> void:
 	if not _playing:
 		return
 	var total := float(PianoRoll.BARS * PianoRoll.BEATS_PER_BAR)
-	_playhead += delta * BPM / 60.0
+	_playhead += delta * float(_bpm_spin.value) / 60.0
 	if _playhead >= total:
 		_playhead -= total
 		_synth.all_notes_off()
