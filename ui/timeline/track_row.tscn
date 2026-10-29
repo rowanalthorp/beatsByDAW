@@ -37,6 +37,7 @@ size_flags_horizontal = 3
 text = "Drums"
 
 [node name="DeleteButton" type="Button" parent="Header/VBox/TopRow" unique_id=795103281]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 icon = ExtResource("2_kex6r")
@@ -47,13 +48,17 @@ expand_icon = true
 layout_mode = 2
 
 [node name="MuteButton" type="Button" parent="Header/VBox/ButtonRow" unique_id=1971085149]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+toggle_mode = true
 text = "Mute"
 
 [node name="SoloButton" type="Button" parent="Header/VBox/ButtonRow" unique_id=1838319155]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+toggle_mode = true
 text = "Solo"
 
 [node name="EffectsButton" type="Button" parent="Header/VBox/ButtonRow" unique_id=592140098]
@@ -72,6 +77,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="VolumeSlider" type="HSlider" parent="Header/VBox/VolumeRow" unique_id=670386716]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = -60.0
@@ -87,6 +93,7 @@ text = "L"
 horizontal_alignment = 1
 
 [node name="PanSlider" type="HSlider" parent="Header/VBox/PanRow" unique_id=1886643417]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = -1.0

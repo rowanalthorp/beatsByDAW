@@ -18,6 +18,8 @@ func _ready() -> void:
 	get_window().min_size = MIN_WINDOW_SIZE
 	_dark_theme = theme # set dark theme to the default start up theme
 	var view_menu: PopupMenu = %View
+	var tracks_menu: PopupMenu = %Tracks
+	tracks_menu.id_pressed.connect(_on_add_track_id_pressed)
 	view_menu.id_pressed.connect(_on_view_menu_id_pressed)
 	Session.open_project(DemoProject.create())
 
@@ -58,3 +60,7 @@ func _toggle_light_theme(on: bool) -> void:
 	# the window background behind the panels isn't part of the theme (and we gotta change that too)
 	var clear: Color = ProjectSettings.get_setting("rendering/environment/defaults/default_clear_color")
 	RenderingServer.set_default_clear_color(ThemeTools.flip(clear) if on else clear)
+
+## item ids match TrackData.Kind: 0 = audio, 1 = instrument.
+func _on_add_track_id_pressed(id: int) -> void:
+	Session.add_new_track(id as TrackData.Kind)

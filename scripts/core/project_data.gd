@@ -20,11 +20,9 @@ func add_track(track: TrackData, index: int = -1) -> void:
 	tracks.insert(index, track)
 	track_added.emit(track, index)
 
-
 func remove_track(track: TrackData) -> void:
 	tracks.erase(track)
 	track_removed.emit(track)
-
 
 ## end time of the last clip, in seconds. the To End button jumps here
 func get_length() -> float:
