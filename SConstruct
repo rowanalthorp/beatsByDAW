@@ -19,6 +19,7 @@ sources = [
     "src/audio_engine/miniaudio.cpp",
     "src/audio_engine/audio_device.cpp",
     "src/audio_engine/audio_engine.cpp",
+    "src/audio_engine/audio_decoder.cpp",
 ]
 
 # Build the shared library depending on the target platform
@@ -30,7 +31,7 @@ if env["platform"] == "windows":
     )
 elif env["platform"] == "linux":
     library = env.SharedLibrary(
-        "bin/daw_backend.linux.template_debug.x86_64.so",
+        "bin/libdaw_backend.linux.template_debug.x86_64.so",
         source=sources,
     )
 elif env["platform"] == "macos":
