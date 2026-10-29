@@ -4,7 +4,7 @@ extends Node
 signal project_changed(project: ProjectData)
 
 var project: ProjectData = ProjectData.new()
-## Zoom: how many pixels wide one second of the project is
+## zoom: how many pixels wide one second of the project is
 var pixels_per_second: float = 40.0
 
 func open_project(new_project: ProjectData) -> void:

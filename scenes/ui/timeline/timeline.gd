@@ -1,7 +1,7 @@
 extends VBoxContainer
 ## the track list: one TrackRow per track in the open project
 
-const TRACK_ROW_SCENE := preload("res://ui/timeline/track_row.tscn")
+const TRACK_ROW_SCENE := preload("res://scenes/ui/timeline/track_row.tscn")
 
 var _project: ProjectData  # the project whose signals were connected to
 

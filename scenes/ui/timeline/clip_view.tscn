@@ -1,10 +1,9 @@
 [gd_scene format=3 uid="uid://ba2m3rybumlsg"]
 
-[ext_resource type="Script" uid="uid://ctslnbl05vw7j" path="res://ui/timeline/clip_view.gd" id="1_m2s4j"]
+[ext_resource type="Script" uid="uid://ctslnbl05vw7j" path="res://scenes/ui/timeline/clip_view.gd" id="1_m2s4j"]
 
 [node name="ClipView" type="Panel" unique_id=1692573973]
 clip_contents = true
-anchors_preset = -1
 anchor_bottom = 1.0
 offset_left = 20.0
 offset_top = 4.0

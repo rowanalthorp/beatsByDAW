@@ -2,7 +2,7 @@ class_name TrackRow
 extends HBoxContainer
 ## one track: header controls on the left, its clips in the lane on the right
 
-const CLIP_VIEW_SCENE := preload("res://ui/timeline/clip_view.tscn")
+const CLIP_VIEW_SCENE := preload("res://scenes/ui/timeline/clip_view.tscn")
 
 var track: TrackData
 
