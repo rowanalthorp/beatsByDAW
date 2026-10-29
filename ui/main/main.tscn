@@ -3,8 +3,8 @@
 [ext_resource type="Theme" uid="uid://sggny4g86jsp" path="res://ui/styles/main_theme.tres" id="1_3a1op"]
 [ext_resource type="PackedScene" uid="uid://cxvlv1by4lgbe" path="res://ui/tool_bar/tool_bar.tscn" id="2_7mc2q"]
 [ext_resource type="Script" uid="uid://dsqeesi15cbf7" path="res://ui/main/main.gd" id="2_ubw8e"]
-[ext_resource type="PackedScene" uid="uid://cb2fnbbe4i6kj" path="res://ui/timeline/track_row.tscn" id="3_ircy7"]
 [ext_resource type="Texture2D" uid="uid://psegxtr6qg4v" path="res://assets/icons/x.svg" id="4_i5l5t"]
+[ext_resource type="Script" uid="uid://cuh52vsql3xna" path="res://ui/timeline/timeline.gd" id="4_ubw8e"]
 [ext_resource type="PackedScene" uid="uid://7k8gnec5d1ko" path="res://ui/project_bar/project_bar.tscn" id="4_ye4sr"]
 [ext_resource type="PackedScene" uid="uid://cl1uuww6tf0hh" path="res://ui/effect_slot/effect_slot.tscn" id="5_1xy46"]
 
@@ -80,6 +80,7 @@ size_flags_vertical = 3
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+script = ExtResource("4_ubw8e")
 
 [node name="RulerRow" type="HBoxContainer" parent="Layout/MainSplit/Timeline" unique_id=2128419803]
 layout_mode = 2
@@ -116,26 +117,9 @@ grow_vertical = 2
 horizontal_scroll_mode = 0
 
 [node name="TrackList" type="VBoxContainer" parent="Layout/MainSplit/Timeline/Body/TrackScroll" unique_id=337910414]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="TrackRow" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=37634068 instance=ExtResource("3_ircy7")]
-layout_mode = 2
-
-[node name="TrackRow2" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=1395615046 instance=ExtResource("3_ircy7")]
-layout_mode = 2
-
-[node name="TrackRow3" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=2086327121 instance=ExtResource("3_ircy7")]
-layout_mode = 2
-
-[node name="TrackRow4" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=699758604 instance=ExtResource("3_ircy7")]
-layout_mode = 2
-
-[node name="TrackRow5" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=650778857 instance=ExtResource("3_ircy7")]
-layout_mode = 2
-
-[node name="TrackRow6" parent="Layout/MainSplit/Timeline/Body/TrackScroll/TrackList" unique_id=294795700 instance=ExtResource("3_ircy7")]
-layout_mode = 2
 
 [node name="Playhead" type="ColorRect" parent="Layout/MainSplit/Timeline/Body" unique_id=2065215905]
 layout_mode = 1

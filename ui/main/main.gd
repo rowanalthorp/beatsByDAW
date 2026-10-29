@@ -19,6 +19,7 @@ func _ready() -> void:
 	_dark_theme = theme # set dark theme to the default start up theme
 	var view_menu: PopupMenu = %View
 	view_menu.id_pressed.connect(_on_view_menu_id_pressed)
+	Session.open_project(DemoProject.create())
 
 ## runs whenever any input is pressed
 func _input(event: InputEvent) -> void:
@@ -31,7 +32,6 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			_on_shortcut(action)
 			return
-
 
 ## returns if the user is currently typing in a text box
 func _is_typing() -> bool:

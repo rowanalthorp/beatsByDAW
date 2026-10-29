@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://cb2fnbbe4i6kj"]
 
+[ext_resource type="Script" uid="uid://bigealmye2rys" path="res://ui/timeline/track_row.gd" id="1_1ivni"]
 [ext_resource type="Texture2D" uid="uid://ui1brahxfcso" path="res://assets/icons/track_row/audio-lines.svg" id="1_ook4o"]
 [ext_resource type="Texture2D" uid="uid://ca72u0nolqniq" path="res://assets/icons/track_row/trash.svg" id="2_kex6r"]
 [ext_resource type="Texture2D" uid="uid://wdffvpp5pt8v" path="res://assets/icons/track_row/volume.svg" id="3_aoa84"]
@@ -10,6 +11,7 @@ anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 111.0
 grow_horizontal = 2
+script = ExtResource("1_1ivni")
 
 [node name="Header" type="PanelContainer" parent="." unique_id=296103946]
 custom_minimum_size = Vector2(200, 0)
@@ -29,6 +31,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="NameEdit" type="LineEdit" parent="Header/VBox/TopRow" unique_id=1371043669]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Drums"
@@ -96,41 +99,6 @@ text = "R"
 horizontal_alignment = 1
 
 [node name="Lane" type="Panel" parent="." unique_id=867706444]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="FakeClip" type="Panel" parent="Lane" unique_id=68808872]
-layout_mode = 1
-anchors_preset = -1
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 4.0
-offset_right = 280.0
-offset_bottom = -4.0
-theme_type_variation = &"ClipPanel"
-
-[node name="ClipName" type="Label" parent="Lane/FakeClip" unique_id=103969971]
-layout_mode = 0
-offset_left = 6.0
-offset_top = 2.0
-offset_right = 46.0
-offset_bottom = 22.0
-text = "Clip 1"
-
-[node name="FakeClip2" type="Panel" parent="Lane" unique_id=1571863238]
-layout_mode = 1
-anchors_preset = -1
-anchor_bottom = 1.0
-offset_left = 300.0
-offset_top = 4.0
-offset_right = 480.0
-offset_bottom = -4.0
-theme_type_variation = &"ClipPanel"
-
-[node name="ClipName" type="Label" parent="Lane/FakeClip2" unique_id=1460450180]
-layout_mode = 0
-offset_left = 6.0
-offset_top = 2.0
-offset_right = 46.0
-offset_bottom = 22.0
-text = "Clip 2"
