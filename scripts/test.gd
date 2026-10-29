@@ -18,14 +18,15 @@ func test_audio_engine():
 	# TODO: add a sega like start audio for this testing, so that know it works by the audio actually playing
 	var audio_engine = AudioEngine.new()
 	add_child(audio_engine)
-	var file_path = ProjectSettings.globalize_path("res://test_audio.wav")
+	var file_path = ProjectSettings.globalize_path("res://test_audio_welcome_to_beatsByDaw.wav")
 	var result = audio_engine.start_audio(file_path)
 	if result != 0:
 		print("CRAP AUDIO FAILED!!!")
 		audio_engine.queue_free()
 		return
 	print("Audio Device has gotten started")
-	await get_tree().create_timer(1.0).timeout
+	while not audio_engine.is_audio_finished():
+		await get_tree().process_frame
 	
 	result = audio_engine.stop_audio()
 	if result != 0:

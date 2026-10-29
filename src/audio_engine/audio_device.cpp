@@ -14,9 +14,11 @@ void AudioDevice::set_active_decoder(AudioDecoder *decoder) {
 }
 
 ma_result AudioDevice::start() {
-    if (initialized_) {
+    if (initialized) {
         return MA_SUCCESS;
     }
+
+    finished.store(false);
 
     ma_device_config config =
         ma_device_config_init(ma_device_type_playback);
@@ -26,29 +28,29 @@ ma_result AudioDevice::start() {
     config.dataCallback = data_callback;
     config.pUserData = this; // this is so that static callback has access to AudioDevice instance
     
-    ma_result result = ma_device_init(nullptr, &config, &device_);
+    ma_result result = ma_device_init(nullptr, &config, &device);
     if (result != MA_SUCCESS) {
         return result;
     }
 
-    result = ma_device_start(&device_);
+    result = ma_device_start(&device);
     if (result != MA_SUCCESS) {
-        ma_device_uninit(&device_);
+        ma_device_uninit(&device);
         return result;
     }
 
-    initialized_ = true;
+    initialized = true;
     return MA_SUCCESS;
 }
 
 ma_result AudioDevice::stop() {
-    if (!initialized_) {
+    if (!initialized) {
         return MA_SUCCESS;
     }
 
-    const ma_result result = ma_device_stop(&device_);
-    ma_device_uninit(&device_);
-    initialized_ = false;
+    const ma_result result = ma_device_stop(&device);
+    ma_device_uninit(&device);
+    initialized = false;
     return result;
 }
 
@@ -74,6 +76,7 @@ void AudioDevice::data_callback(
     ma_uint64 frames_read = audio_device->active_decoder->read_frames(cast_output_float, frame_count);
 
     if (frames_read < frame_count) {
+        audio_device->finished.store(true);
         const std::size_t frames_left = static_cast<std::size_t>(frame_count) - frames_read;
         std::memset(
             cast_output_float + (frames_read * channels),

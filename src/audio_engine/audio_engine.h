@@ -18,5 +18,6 @@ namespace godot {
             ~AudioEngine();
             int start_audio(const String &fp);
             int stop_audio();
+            bool is_audio_finished() const;
     };
 }
