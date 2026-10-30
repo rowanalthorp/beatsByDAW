@@ -10,8 +10,11 @@ AudioDevice::~AudioDevice() {
 }
 
 void AudioDevice::set_active_decoder(AudioDecoder *decoder) {
-    active_decoder = decoder;
+    mixer.clear_sources();
+    mixer.add_source(decoder);
 }
+void AudioDevice::add_source(AudioDecoder *decoder) { mixer.add_source(decoder); }
+void AudioDevice::clear_sources() { mixer.clear_sources(); }
 
 ma_result AudioDevice::start() {
     if (initialized) {
@@ -48,9 +51,36 @@ ma_result AudioDevice::stop() {
         return MA_SUCCESS;
     }
 
-    const ma_result result = ma_device_stop(&device);
+    ma_result result = MA_SUCCESS;
+    if (!paused) { result = ma_device_stop(&device); }
+
     ma_device_uninit(&device);
     initialized = false;
+    paused = false;
+    return result;
+}
+
+ma_result AudioDevice::pause() {
+    if (!initialized || paused) {
+        return MA_SUCCESS;
+    }
+
+    const ma_result result = ma_device_stop(&device);
+    if (result == MA_SUCCESS) {
+        paused = true;
+    }
+    return result;
+}
+
+ma_result AudioDevice::resume() {
+    if (!initialized || !paused) {
+        return MA_SUCCESS;
+    }
+
+    const ma_result result = ma_device_start(&device);
+    if (result == MA_SUCCESS) {
+        paused = false;
+    }
     return result;
 }
 
@@ -68,20 +98,11 @@ void AudioDevice::data_callback(
     const std::size_t sample_count = static_cast<std::size_t>(frame_count) * channels;
     float *cast_output_float = static_cast<float *>(output);
 
-    if (!audio_device || !audio_device -> active_decoder || !audio_device->active_decoder->is_loaded()) {
+    if (audio_device == nullptr) {
         std::memset(output, 0, sample_count * sizeof(float));
         return;
     }
 
-    ma_uint64 frames_read = audio_device->active_decoder->read_frames(cast_output_float, frame_count);
-
-    if (frames_read < frame_count) {
-        audio_device->finished.store(true);
-        const std::size_t frames_left = static_cast<std::size_t>(frame_count) - frames_read;
-        std::memset(
-            cast_output_float + (frames_read * channels),
-            0,
-            frames_left * channels * sizeof(float)
-        );
-    }
+    const bool all_sources_finished = audio_device->mixer.mix_it_groovy_style(cast_output_float, frame_count);
+    audio_device->finished.store(all_sources_finished);
 }

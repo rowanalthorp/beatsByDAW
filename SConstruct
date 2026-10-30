@@ -20,6 +20,7 @@ sources = [
     "src/audio_engine/audio_device.cpp",
     "src/audio_engine/audio_engine.cpp",
     "src/audio_engine/audio_decoder.cpp",
+    "src/audio_engine/mixer_core.cpp",
 ]
 
 # Build the shared library depending on the target platform

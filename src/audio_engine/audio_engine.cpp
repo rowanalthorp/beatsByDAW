@@ -7,6 +7,8 @@ void AudioEngine::_bind_methods() {
     ClassDB::bind_method(D_METHOD("start_audio", "path"), &AudioEngine::start_audio);
     ClassDB::bind_method(D_METHOD("stop_audio"), &AudioEngine::stop_audio);
     ClassDB::bind_method(D_METHOD("is_audio_finished"), &AudioEngine::is_audio_finished);
+    ClassDB::bind_method(D_METHOD("pause_audio"), &AudioEngine::pause_audio);
+    ClassDB::bind_method(D_METHOD("resume_audio"), &AudioEngine::resume_audio);
 }
 
 AudioEngine::AudioEngine() {}
@@ -33,6 +35,16 @@ int AudioEngine::start_audio(const String &path) {
 int AudioEngine::stop_audio() {
     const ma_result result = audio_device.stop();
     audio_decoder.close();
+    return static_cast<int>(result);// godot does not jive with ma_result, so we cast to int
+}
+
+int AudioEngine::pause_audio() {
+    const ma_result result = audio_device.pause();
+    return static_cast<int>(result);// godot does not jive with ma_result, so we cast to int
+}
+
+int AudioEngine::resume_audio() {
+    const ma_result result = audio_device.resume();
     return static_cast<int>(result);// godot does not jive with ma_result, so we cast to int
 }
 
