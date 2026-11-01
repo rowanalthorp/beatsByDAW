@@ -13,7 +13,7 @@
 #
 # pipeline is from the rhythm slides (slides 11-12), and then I found the related paper behind the slides:
 # https://webhome.csc.uvic.ca/~gtzan/output/icassp2013tempo_gtzan.pdf (section 2.1)
-# thank god for this paper
+# thank god for this paper (take a shot everytime I say paper)
 
 import os
 import sys
