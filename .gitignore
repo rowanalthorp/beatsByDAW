@@ -43,3 +43,7 @@ godot-cpp/gen/
 # bin/*.dll
 # bin/*.so
 # bin/*.dylib
+
+# MIR prototype: dataset and Python env
+mir/data/
+mir/.venv/
