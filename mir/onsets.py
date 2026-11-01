@@ -1,5 +1,6 @@
 # obj 5 PI1: onset detection w/ spectral flux
-# run from the repo root with the venv active:
+# note to self -> run from the repo root with the venv active:
+#   .\mir\.venv\Scripts\Activate.ps1
 #   python mir/onsets.py mir/data/BallroomData/ChaChaCha/Albums-Fire-08.wav
 #
 # cuts the audio into short overlapping slices (1024 samples, new slice every 128 = ~3 ms apart)
@@ -12,6 +13,7 @@
 #
 # pipeline is from the rhythm slides (slides 11-12), and then I found the related paper behind the slides:
 # https://webhome.csc.uvic.ca/~gtzan/output/icassp2013tempo_gtzan.pdf (section 2.1)
+# thank god for this paper
 
 import os
 import sys
