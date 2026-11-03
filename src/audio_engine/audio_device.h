@@ -11,7 +11,6 @@ public:
     AudioDevice();
     ~AudioDevice();
 
-    void set_active_decoder(AudioDecoder *decoder);
     void add_source(AudioDecoder *decoder);
     void clear_sources();
     ma_result start();

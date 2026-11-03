@@ -19,12 +19,22 @@ func test_audio_engine():
 	var audio_engine = AudioEngine.new()
 	add_child(audio_engine)
 	var file_path = ProjectSettings.globalize_path("res://test_audio_welcome_to_beatsByDaw.wav")
-	var result = audio_engine.start_audio(file_path)
+	if not audio_engine.add_audio_source(file_path):
+		print("COULD not load the first audio file")
+		audio_engine.queue_free()
+		return
+	if not audio_engine.add_audio_source(file_path):
+		print("COULD not LOad the secodn audio file")
+		audio_engine.queue_free()
+		return
+	var result = audio_engine.start_audio_sources()
 	if result != 0:
 		print("CRAP AUDIO FAILED!!!")
+		audio_engine.stop_audio()
 		audio_engine.queue_free()
 		return
 	print("Audio Device has gotten started")
+	
 	while not audio_engine.is_audio_finished():
 		await get_tree().process_frame
 	

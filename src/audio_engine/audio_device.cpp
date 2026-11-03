@@ -9,10 +9,6 @@ AudioDevice::~AudioDevice() {
     stop();
 }
 
-void AudioDevice::set_active_decoder(AudioDecoder *decoder) {
-    mixer.clear_sources();
-    mixer.add_source(decoder);
-}
 void AudioDevice::add_source(AudioDecoder *decoder) { mixer.add_source(decoder); }
 void AudioDevice::clear_sources() { mixer.clear_sources(); }
 
