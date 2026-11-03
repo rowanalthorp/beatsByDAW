@@ -1,3 +1,5 @@
 librosa==1.0.0
 mir_eval==0.8.2
 matplotlib
+numpy
+scipy

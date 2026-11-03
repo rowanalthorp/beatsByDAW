@@ -20,7 +20,7 @@ import numpy as np
 
 # reusing the functions from onsets.py and tempo.py so this tests the exact same code, not a copy of it (also cuz its easier lol)
 from onsets import detect_onsets, onset_strength
-from tempo import beat_histogram, bpms, enhance_harmonics, true_tempo
+from tempo import beat_histogram, bpms, enhance_harmonics, true_tempo, pulse_histogram, octave_rule
 
 srate = 44100
 win_size = 1024
@@ -35,7 +35,7 @@ def accuracy1(estimate, truth, tolerance=0.04):
 def accuracy2(estimate, truth, tolerance=0.04):
     # also counts 1/3, 1/2, 2 or 3x the true BPM (slide 16) since rhythm repeats at several levels (subdivision, beat, bar)
     # that are 2x or 3x apart (slide 5), so being off by exactly those factors means we found a real level, just not the labelled one.
-    # acc2 - acc1 = how many of those we make, which the paper's octave rule (not added yet) is supposed to fix
+    # acc2 - acc1 = how many of those we make, which the paper's octave rule in tempo.py is supposed to fix
     return any(accuracy1(estimate, truth * factor, tolerance) for factor in (1 / 3, 1 / 2, 1, 2, 3))
 
 
@@ -62,7 +62,10 @@ def main(per_style):
 
         # compute the onset curve once and use it for both tempo and onsets so each track only gets analyzed once
         onset_curve = onset_strength(audio, srate, win_size, hop_size)
-        our_bpm = bpms[np.argmax(enhance_harmonics(beat_histogram(onset_curve, curve_rate)))]
+        enhanced = enhance_harmonics(beat_histogram(onset_curve, curve_rate))
+        # first guess (beat histogram peak only) kept next to the final answer so one run shows what the pulse trains + octave rule fixed or broke
+        first_guess = bpms[np.argmax(enhanced)]
+        our_bpm = octave_rule(enhanced, pulse_histogram(onset_curve, curve_rate))
         librosa_bpm = float(librosa.feature.tempo(y=audio, sr=srate)[0])
         truth = true_tempo(name)
 
@@ -73,13 +76,14 @@ def main(per_style):
 
         rows.append({
             "style": style, "track": name, "true_bpm": truth,
-            "our_bpm": our_bpm, "librosa_bpm": round(librosa_bpm, 2),
+            "first_guess_bpm": first_guess, "our_bpm": our_bpm, "librosa_bpm": round(librosa_bpm, 2),
+            "first_acc1": accuracy1(first_guess, truth), "first_acc2": accuracy2(first_guess, truth),
             "our_acc1": accuracy1(our_bpm, truth), "our_acc2": accuracy2(our_bpm, truth),
             "librosa_acc1": accuracy1(librosa_bpm, truth), "librosa_acc2": accuracy2(librosa_bpm, truth),
             "onset_agreement_f": round(onset_f, 3),
         })
         # print as it goes since the full dataset takes a while and it's nice to see it's not stuck
-        print(f"[{i}/{len(tracks)}] {style}/{name}: true {truth:.1f}, ours {our_bpm:.1f}, librosa {librosa_bpm:.1f}, onset F {onset_f:.2f}")
+        print(f"[{i}/{len(tracks)}] {style}/{name}: true {truth:.1f}, first guess {first_guess:.1f}, ours {our_bpm:.1f}, librosa {librosa_bpm:.1f}, onset F {onset_f:.2f}")
 
     # csv so the per-track results can go straight into a table for the report or get opened in excel
     os.makedirs("mir/out", exist_ok=True)
@@ -93,10 +97,10 @@ def main(per_style):
         return 100 * np.mean([row[key] for row in rows])
 
     print(f"\n{len(rows)} tracks")
-    print(f"accuracy 1:  ours {percent('our_acc1'):.1f}%   librosa {percent('librosa_acc1'):.1f}%")
-    print(f"accuracy 2:  ours {percent('our_acc2'):.1f}%   librosa {percent('librosa_acc2'):.1f}%")
+    print(f"accuracy 1:  first guess {percent('first_acc1'):.1f}%   ours {percent('our_acc1'):.1f}%   librosa {percent('librosa_acc1'):.1f}%")
+    print(f"accuracy 2:  first guess {percent('first_acc2'):.1f}%   ours {percent('our_acc2'):.1f}%   librosa {percent('librosa_acc2'):.1f}%")
     print(f"onset agreement w/ librosa (mean F): {np.mean([row['onset_agreement_f'] for row in rows]):.2f}")
     print("saved to mir/out/eval_tempo.csv")
 
 if __name__ == "__main__":
-        main(int(sys.argv[1]) if len(sys.argv) > 1 else 5)
+    main(int(sys.argv[1]) if len(sys.argv) > 1 else 5)
