@@ -32,6 +32,7 @@ script = ExtResource("1_aexei")
 layout_mode = 2
 
 [node name="PlayPause" type="Button" parent="PlaybackGroup" unique_id=1601447684]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 tooltip_text = "Pause"
@@ -41,6 +42,7 @@ icon = ExtResource("2_q2wek")
 icon_alignment = 1
 
 [node name="Stop" type="Button" parent="PlaybackGroup" unique_id=195225314]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 tooltip_text = "Stop"
@@ -49,6 +51,7 @@ icon = ExtResource("3_j0tcb")
 icon_alignment = 1
 
 [node name="ToStart" type="Button" parent="PlaybackGroup" unique_id=51008249]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 theme_override_constants/icon_max_width = 25
@@ -56,6 +59,7 @@ icon = ExtResource("4_lyjna")
 icon_alignment = 1
 
 [node name="ToEnd" type="Button" parent="PlaybackGroup" unique_id=333888890]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 theme_override_constants/icon_max_width = 25

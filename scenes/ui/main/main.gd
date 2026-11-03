@@ -39,9 +39,17 @@ func _input(event: InputEvent) -> void:
 func _is_typing() -> bool:
 	return get_viewport().gui_get_focus_owner() is LineEdit
 
-## placeholder func when shortcuts are pressed
+## func for when shortcuts are pressed
 func _on_shortcut(action: StringName) -> void:
-	print("Shortcut: ", action)
+	match action:
+		&"play_pause":
+			Transport.toggle_play()
+		&"go_to_start":
+			Transport.seek(0.0)
+		&"go_to_end":
+			Transport.seek(Session.project.get_length())
+		_:
+			print("Shortcut: ", action)  # other shortcutss come in later
 
 func _on_view_menu_id_pressed(id: int) -> void:
 	if id == ViewMenuId.LIGHT_THEME:
