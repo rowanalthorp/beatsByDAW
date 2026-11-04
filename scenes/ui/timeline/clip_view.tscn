@@ -4,6 +4,7 @@
 
 [node name="ClipView" type="Panel" unique_id=1692573973]
 clip_contents = true
+anchors_preset = 9
 anchor_bottom = 1.0
 offset_left = 20.0
 offset_top = 4.0

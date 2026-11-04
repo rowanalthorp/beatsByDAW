@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://cuh52vsql3xna" path="res://scenes/ui/timeline/timeline.gd" id="4_ubw8e"]
 [ext_resource type="PackedScene" uid="uid://7k8gnec5d1ko" path="res://scenes/ui/project_bar/project_bar.tscn" id="4_ye4sr"]
 [ext_resource type="PackedScene" uid="uid://cl1uuww6tf0hh" path="res://scenes/ui/effect_slot/effect_slot.tscn" id="5_1xy46"]
+[ext_resource type="Script" uid="uid://bi3ef1v0lt0rg" path="res://scenes/ui/timeline/ruler.gd" id="5_jfgcv"]
 
 [node name="Main" type="Control" unique_id=1762842026]
 layout_mode = 3
@@ -96,15 +97,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="RulerText" type="Label" parent="Layout/MainSplit/Timeline/RulerRow/Ruler" unique_id=1721208969]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-horizontal_alignment = 1
+script = ExtResource("5_jfgcv")
 
 [node name="Body" type="Control" parent="Layout/MainSplit/Timeline" unique_id=1218643840]
 clip_contents = true
@@ -140,6 +133,7 @@ color = Color(0.29803923, 0.8509804, 0.39215687, 1)
 layout_mode = 2
 
 [node name="EffectsSidebar" type="PanelContainer" parent="Layout/MainSplit" unique_id=376513993]
+visible = false
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 

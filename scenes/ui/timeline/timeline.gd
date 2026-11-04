@@ -21,7 +21,7 @@ func _ready() -> void:
 
 ## rebuilds every row and listens to the new projects track signals
 func _on_project_changed(project: ProjectData) -> void:
-	# if a project is "loaded" then, session is listening to THAT ProjectData signals.
+	# if a project is "loaded" then session is listening to THAT ProjectData signals.
 	# what we do here is stop listening to the "old" project, so we arent accidentally
 	# pinging that projects signals, and accidentally overwritting another project's
 	# data when making changing in the "new" project
@@ -55,8 +55,11 @@ func _on_track_removed(track: TrackData) -> void:
 
 ## slides the playhead line to the current time
 func _on_position_changed(seconds: float) -> void:
-	%Playhead.offset_left = _lane_start + seconds * Session.pixels_per_second
-	%Playhead.offset_right = %Playhead.offset_left + 2.0  # keep it 2px wide
+	var x := _lane_start + seconds * Session.pixels_per_second
+	# center the 2px line on the time (1px each side), same as the ruler's lines,
+	# otherwise its left edge sits on the time and it looks shifted right
+	%Playhead.offset_left = x - 1.0
+	%Playhead.offset_right = x + 1.0
 
 
 ## clicking the ruler jumps the clock there
