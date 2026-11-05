@@ -19,6 +19,7 @@ layout_mode = 2
 text = "Tempo"
 
 [node name="TempoSpin" type="SpinBox" parent="Hbox/SettingsGroup" unique_id=1306577386]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 min_value = 20.0
