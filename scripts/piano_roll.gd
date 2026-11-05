@@ -10,8 +10,14 @@ signal preview_note_off(pitch: int)
 const KEY_WIDTH := 56.0
 const ROW_HEIGHT := 14.0
 const BEAT_WIDTH := 48.0
-const BEATS_PER_BAR := 4
-const BARS := 8
+var bars := 8:
+	set(value):
+		bars = maxi(value, 1)
+		_refresh_size()
+var beats_per_bar := 4:
+	set(value):
+		beats_per_bar = maxi(value, 1)
+		_refresh_size()
 const SNAP := 0.5
 const RESIZE_MARGIN := 7.0
 const PITCH_LOW := 36 ## C2
@@ -30,10 +36,15 @@ var _grab_pitch_offset := 0
 
 
 func _ready() -> void:
+	_refresh_size()
+
+
+func _refresh_size() -> void:
 	custom_minimum_size = Vector2(
-		KEY_WIDTH + BARS * BEATS_PER_BAR * BEAT_WIDTH,
+		KEY_WIDTH + bars * beats_per_bar * BEAT_WIDTH,
 		(PITCH_HIGH - PITCH_LOW + 1) * ROW_HEIGHT
 	)
+	queue_redraw()
 
 
 func clear_notes() -> void:
@@ -101,8 +112,8 @@ func _input(event: InputEvent) -> void:
 				return
 			var n := notes[_resize_note]
 			var end := clampf(
-				snappedf(_beat_at(pos.x), SNAP), 0.0, float(BARS * BEATS_PER_BAR))
-			n.length = clampf(end - n.start, SNAP, BARS * BEATS_PER_BAR - n.start)
+				snappedf(_beat_at(pos.x), SNAP), 0.0, float(bars * beats_per_bar))
+			n.length = clampf(end - n.start, SNAP, bars * beats_per_bar - n.start)
 			queue_redraw()
 		elif _move_note != -1:
 			if _move_note >= notes.size():
@@ -110,7 +121,7 @@ func _input(event: InputEvent) -> void:
 				return
 			var n := notes[_move_note]
 			n.start = _snap_floor(_beat_at(pos.x) - _grab_beat_offset)
-			n.start = minf(n.start, BARS * BEATS_PER_BAR - n.length)
+			n.start = minf(n.start, bars * beats_per_bar - n.length)
 			n.pitch = clampi(
 				_pitch_at(pos.y) + _grab_pitch_offset, PITCH_LOW, PITCH_HIGH)
 			queue_redraw()
@@ -123,7 +134,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _draw() -> void:
-	var grid_w := BARS * BEATS_PER_BAR * BEAT_WIDTH
+	var grid_w := bars * beats_per_bar * BEAT_WIDTH
 	var rows := PITCH_HIGH - PITCH_LOW + 1
 	var h := rows * ROW_HEIGHT
 	var font := get_theme_default_font()
@@ -145,18 +156,18 @@ func _draw() -> void:
 			Color(1, 1, 1, 0.22 if strong else 0.07))
 
 	# Beat, half-beat, and bar lines + bar numbers
-	for b in range(BARS * BEATS_PER_BAR + 1):
+	for b in range(bars * beats_per_bar + 1):
 		var x := KEY_WIDTH + b * BEAT_WIDTH
-		var is_bar := b % BEATS_PER_BAR == 0
+		var is_bar := b % beats_per_bar == 0
 		draw_line(
 			Vector2(x, 0), Vector2(x, h),
 			Color(1, 1, 1, 0.3 if is_bar else 0.12))
-		if b < BARS * BEATS_PER_BAR:
+		if b < bars * beats_per_bar:
 			var xh := x + BEAT_WIDTH * SNAP
 			draw_line(Vector2(xh, 0), Vector2(xh, h), Color(1, 1, 1, 0.05))
-		if is_bar and b < BARS * BEATS_PER_BAR:
+		if is_bar and b < bars * beats_per_bar:
 			draw_string(
-				font, Vector2(x + 4, 12), "Bar %d" % (b / BEATS_PER_BAR + 1),
+				font, Vector2(x + 4, 12), "Bar %d" % (b / beats_per_bar + 1),
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.5))
 
 	# Keyboard column
@@ -201,11 +212,11 @@ func _pitch_at(y: float) -> int:
 
 
 func _beat_at(x: float) -> float:
-	return clampf((x - KEY_WIDTH) / BEAT_WIDTH, 0.0, float(BARS * BEATS_PER_BAR))
+	return clampf((x - KEY_WIDTH) / BEAT_WIDTH, 0.0, float(bars * beats_per_bar))
 
 
 func _snap_floor(b: float) -> float:
-	return clampf(floor(b / SNAP) * SNAP, 0.0, float(BARS * BEATS_PER_BAR))
+	return clampf(floor(b / SNAP) * SNAP, 0.0, float(bars * beats_per_bar))
 
 
 func _near_right_edge(n: Dictionary, x: float) -> bool:
