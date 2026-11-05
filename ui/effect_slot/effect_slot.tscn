@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://cl1uuww6tf0hh"]
+
+[ext_resource type="Texture2D" uid="uid://psegxtr6qg4v" path="res://assets/icons/x.svg" id="1_r02j2"]
+
+[node name="EffectSlot" type="PanelContainer" unique_id=1487123405]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_type_variation = &"EffectPanel"
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=364167427]
+layout_mode = 2
+
+[node name="TopRow" type="HBoxContainer" parent="VBox" unique_id=399836054]
+layout_mode = 2
+
+[node name="EffectName" type="Label" parent="VBox/TopRow" unique_id=1694074694]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "EQ"
+
+[node name="BypassButton" type="CheckButton" parent="VBox/TopRow" unique_id=1199063747]
+layout_mode = 2
+
+[node name="RemoveButton" type="Button" parent="VBox/TopRow" unique_id=1398586824]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+icon = ExtResource("1_r02j2")
+expand_icon = true
+
+[node name="ParamRow" type="HBoxContainer" parent="VBox" unique_id=607286964]
+layout_mode = 2
+
+[node name="ParamName" type="Label" parent="VBox/ParamRow" unique_id=963988214]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "Low"
+
+[node name="ParamSlider" type="HSlider" parent="VBox/ParamRow" unique_id=1844939674]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ParamRow2" type="HBoxContainer" parent="VBox" unique_id=778299425]
+layout_mode = 2
+
+[node name="ParamName" type="Label" parent="VBox/ParamRow2" unique_id=931066774]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "High"
+
+[node name="ParamSlider" type="HSlider" parent="VBox/ParamRow2" unique_id=1127369098]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 3

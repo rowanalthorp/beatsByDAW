@@ -1,0 +1,52 @@
+[gd_scene format=3 uid="uid://7k8gnec5d1ko"]
+
+[node name="ProjectBar" type="PanelContainer" unique_id=1092012586]
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+
+[node name="Hbox" type="HBoxContainer" parent="." unique_id=351390462]
+layout_mode = 2
+
+[node name="SettingsGroup" type="HBoxContainer" parent="Hbox" unique_id=888347373]
+layout_mode = 2
+
+[node name="TempoLabel" type="Label" parent="Hbox/SettingsGroup" unique_id=1707271188]
+layout_mode = 2
+text = "Tempo"
+
+[node name="TempoSpin" type="SpinBox" parent="Hbox/SettingsGroup" unique_id=1306577386]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+min_value = 20.0
+max_value = 300.0
+value = 120.0
+suffix = "BPM"
+
+[node name="VSeparator" type="VSeparator" parent="Hbox/SettingsGroup" unique_id=498205350]
+layout_mode = 2
+
+[node name="SnapCheck" type="CheckButton" parent="Hbox/SettingsGroup" unique_id=56670295]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Snap to beat
+"
+
+[node name="LeftSpacer" type="Control" parent="Hbox" unique_id=1786092755]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TimeLabel" type="Label" parent="Hbox" unique_id=1270282830]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "00:00.000"
+
+[node name="RightSpacer" type="Control" parent="Hbox" unique_id=2009357534]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StateLabel" type="Label" parent="Hbox" unique_id=1970744916]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Stopped"
+horizontal_alignment = 2

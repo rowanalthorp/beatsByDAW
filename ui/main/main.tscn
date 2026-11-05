@@ -1,0 +1,198 @@
+[gd_scene format=3 uid="uid://be51868ac2ysp"]
+
+[ext_resource type="Theme" uid="uid://sggny4g86jsp" path="res://ui/styles/main_theme.tres" id="1_3a1op"]
+[ext_resource type="PackedScene" uid="uid://cxvlv1by4lgbe" path="res://ui/tool_bar/tool_bar.tscn" id="2_7mc2q"]
+[ext_resource type="PackedScene" uid="uid://cb2fnbbe4i6kj" path="res://ui/timeline/track_row.tscn" id="3_ircy7"]
+[ext_resource type="Texture2D" uid="uid://psegxtr6qg4v" path="res://assets/icons/x.svg" id="4_i5l5t"]
+[ext_resource type="PackedScene" uid="uid://7k8gnec5d1ko" path="res://ui/project_bar/project_bar.tscn" id="4_ye4sr"]
+[ext_resource type="PackedScene" uid="uid://cl1uuww6tf0hh" path="res://ui/effect_slot/effect_slot.tscn" id="5_1xy46"]
+
+[node name="Main" type="Control" unique_id=1762842026]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_3a1op")
+
+[node name="Layout" type="VBoxContainer" parent="." unique_id=443464034]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuBar" type="MenuBar" parent="Layout" unique_id=2087196430]
+layout_mode = 2
+
+[node name="File" type="PopupMenu" parent="Layout/MenuBar" unique_id=2057121634]
+item_count = 5
+item_0/text = "New"
+item_0/id = 0
+item_1/text = "Open"
+item_1/id = 1
+item_2/text = "Save"
+item_2/id = 2
+item_3/text = "Import Audio"
+item_3/id = 3
+item_4/text = "Export"
+item_4/id = 4
+
+[node name="Edit" type="PopupMenu" parent="Layout/MenuBar" unique_id=80073777]
+item_count = 5
+item_0/text = "Undo"
+item_0/id = 0
+item_1/text = "Redo"
+item_1/id = 1
+item_2/text = "Cut"
+item_2/id = 2
+item_3/text = "Copy"
+item_3/id = 3
+item_4/text = "Paste"
+item_4/id = 4
+
+[node name="Tracks" type="PopupMenu" parent="Layout/MenuBar" unique_id=956526849]
+item_count = 2
+item_0/text = "Add Audio Track"
+item_0/id = 0
+item_1/text = "Add Instrument Track"
+item_1/id = 1
+
+[node name="ToolBar" parent="Layout" unique_id=831185271 instance=ExtResource("2_7mc2q")]
+layout_mode = 2
+
+[node name="MainSplit" type="HSplitContainer" parent="Layout" unique_id=65416032]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Timeline" type="VBoxContainer" parent="Layout/MainSplit" unique_id=700847618]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RulerRow" type="HBoxContainer" parent="Layout/MainSplit/Timeline" unique_id=2128419803]
+layout_mode = 2
+
+[node name="HeaderSpacer" type="Control" parent="Layout/MainSplit/Timeline/RulerRow" unique_id=1291152989]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="Layout/MainSplit/Timeline/RulerRow" unique_id=1317750034]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="Layout/MainSplit/Timeline/RulerRow/Panel" unique_id=1721208969]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+
+[node name="Body" type="Control" parent="Layout/MainSplit/Timeline" unique_id=1218643840]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TrackScroll" type="ScrollContainer" parent="Layout/MainSplit/Timeline/Body" unique_id=989126165]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Layout/MainSplit/Timeline/Body/TrackScroll" unique_id=337910414]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TrackRow" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=37634068 instance=ExtResource("3_ircy7")]
+layout_mode = 2
+
+[node name="TrackRow2" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=1395615046 instance=ExtResource("3_ircy7")]
+layout_mode = 2
+
+[node name="TrackRow3" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=2086327121 instance=ExtResource("3_ircy7")]
+layout_mode = 2
+
+[node name="TrackRow4" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=699758604 instance=ExtResource("3_ircy7")]
+layout_mode = 2
+
+[node name="TrackRow5" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=650778857 instance=ExtResource("3_ircy7")]
+layout_mode = 2
+
+[node name="TrackRow6" parent="Layout/MainSplit/Timeline/Body/TrackScroll/VBoxContainer" unique_id=294795700 instance=ExtResource("3_ircy7")]
+layout_mode = 2
+
+[node name="Playhead" type="ColorRect" parent="Layout/MainSplit/Timeline/Body" unique_id=2065215905]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 350.0
+offset_right = 352.0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.29803923, 0.8509804, 0.39215687, 1)
+
+[node name="HScrollBar" type="HScrollBar" parent="Layout/MainSplit/Timeline" unique_id=1746675159]
+layout_mode = 2
+
+[node name="EffectsSidebar" type="PanelContainer" parent="Layout/MainSplit" unique_id=376513993]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Layout/MainSplit/EffectsSidebar" unique_id=2123073200]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="Layout/MainSplit/EffectsSidebar/VBox" unique_id=1143469478]
+layout_mode = 2
+
+[node name="TrackName" type="Label" parent="Layout/MainSplit/EffectsSidebar/VBox/Header" unique_id=1446941967]
+layout_mode = 2
+text = "Effects: Drums"
+
+[node name="CloseButton" type="Button" parent="Layout/MainSplit/EffectsSidebar/VBox/Header" unique_id=1829635191]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_horizontal = 10
+icon = ExtResource("4_i5l5t")
+expand_icon = true
+
+[node name="HSeparator" type="HSeparator" parent="Layout/MainSplit/EffectsSidebar/VBox" unique_id=1423141360]
+layout_mode = 2
+
+[node name="EffectScroll" type="ScrollContainer" parent="Layout/MainSplit/EffectsSidebar/VBox" unique_id=1540317594]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="EffectList" type="VBoxContainer" parent="Layout/MainSplit/EffectsSidebar/VBox/EffectScroll" unique_id=1544517349]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EffectSlot" parent="Layout/MainSplit/EffectsSidebar/VBox/EffectScroll/EffectList" unique_id=1487123405 instance=ExtResource("5_1xy46")]
+layout_mode = 2
+
+[node name="EffectSlot2" parent="Layout/MainSplit/EffectsSidebar/VBox/EffectScroll/EffectList" unique_id=1725349368 instance=ExtResource("5_1xy46")]
+layout_mode = 2
+
+[node name="AddEffectButton" type="MenuButton" parent="Layout/MainSplit/EffectsSidebar/VBox" unique_id=1360636689]
+layout_mode = 2
+text = "+ Add effect"
+flat = false
+item_count = 4
+popup/item_0/text = "EQ"
+popup/item_0/id = 0
+popup/item_1/text = "Delay"
+popup/item_1/id = 1
+popup/item_2/text = "Reverb"
+popup/item_2/id = 2
+popup/item_3/text = "Noise Reduction"
+popup/item_3/id = 3
+
+[node name="ProjectBar" parent="Layout" unique_id=1092012586 instance=ExtResource("4_ye4sr")]
+layout_mode = 2
