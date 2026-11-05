@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://cxvlv1by4lgbe"]
 
+[ext_resource type="Script" uid="uid://crvf1xoxdy2pn" path="res://scenes/ui/tool_bar/tool_bar.gd" id="1_aexei"]
 [ext_resource type="Texture2D" uid="uid://qewtkaslhs70" path="res://assets/icons/tool_bar/play.svg" id="2_q2wek"]
 [ext_resource type="Texture2D" uid="uid://b3xc4naunoo0h" path="res://assets/icons/tool_bar/stop.svg" id="3_j0tcb"]
 [ext_resource type="Texture2D" uid="uid://b03huwhfpdcyn" path="res://assets/icons/tool_bar/skip-back.svg" id="4_lyjna"]
@@ -25,11 +26,13 @@ anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 50.0
 grow_horizontal = 2
+script = ExtResource("1_aexei")
 
 [node name="PlaybackGroup" type="HBoxContainer" parent="." unique_id=1584876392]
 layout_mode = 2
 
 [node name="PlayPause" type="Button" parent="PlaybackGroup" unique_id=1601447684]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 tooltip_text = "Pause"
@@ -39,6 +42,7 @@ icon = ExtResource("2_q2wek")
 icon_alignment = 1
 
 [node name="Stop" type="Button" parent="PlaybackGroup" unique_id=195225314]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 tooltip_text = "Stop"
@@ -47,6 +51,7 @@ icon = ExtResource("3_j0tcb")
 icon_alignment = 1
 
 [node name="ToStart" type="Button" parent="PlaybackGroup" unique_id=51008249]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 theme_override_constants/icon_max_width = 25
@@ -54,6 +59,7 @@ icon = ExtResource("4_lyjna")
 icon_alignment = 1
 
 [node name="ToEnd" type="Button" parent="PlaybackGroup" unique_id=333888890]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 theme_override_constants/icon_max_width = 25
@@ -150,6 +156,7 @@ layout_mode = 2
 columns = 2
 
 [node name="ZoomIn" type="Button" parent="ZoomGroup" unique_id=1347024175]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Zoom In"
@@ -158,6 +165,7 @@ icon_alignment = 1
 expand_icon = true
 
 [node name="ZoomOut" type="Button" parent="ZoomGroup" unique_id=597698981]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Zoom Out"
@@ -166,6 +174,7 @@ icon_alignment = 1
 expand_icon = true
 
 [node name="ZoomFit" type="Button" parent="ZoomGroup" unique_id=1410664041]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Fit to Screen"
@@ -190,6 +199,7 @@ icon = ExtResource("18_w76n2")
 icon_alignment = 1
 
 [node name="AddTrack" type="MenuButton" parent="ProjectGroup" unique_id=823012153]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 tooltip_text = "Add Track"
