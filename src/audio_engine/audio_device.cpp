@@ -9,8 +9,9 @@ AudioDevice::~AudioDevice() {
     stop();
 }
 
-void AudioDevice::add_source(AudioDecoder *decoder) { mixer.add_source(decoder); }
-void AudioDevice::clear_sources() { mixer.clear_sources(); }
+void AudioDevice::add_track(TrackChannel *track) { mixer.add_track(track); }
+void AudioDevice::clear_tracks() { mixer.clear_tracks(); }
+bool AudioDevice::set_track_volume(int track_id, float volume) { return mixer.set_track_volume(track_id, volume); }
 
 ma_result AudioDevice::start() {
     if (initialized) {

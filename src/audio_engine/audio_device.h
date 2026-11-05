@@ -1,7 +1,6 @@
 #pragma once
 
 #include <miniaudio.h>
-#include "audio_decoder.h"
 #include "mixer_core.h"
 #include <atomic>
 
@@ -11,8 +10,9 @@ public:
     AudioDevice();
     ~AudioDevice();
 
-    void add_source(AudioDecoder *decoder);
-    void clear_sources();
+    void add_track(TrackChannel *track);
+    void clear_tracks();
+    bool set_track_volume(int track_id, float volume);
     ma_result start();
     ma_result stop();
     ma_result pause();
