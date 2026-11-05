@@ -9,10 +9,10 @@ const SHORTCUT_ACTIONS: Array[StringName] = [
 ]
 
 # enum since we will prob get more entries with zooming in, out, and expanding
-enum ViewMenuId { LIGHT_THEME }
+enum ViewMenuId { LIGHT_THEME, RULER_SECONDS }
 
 var _dark_theme: Theme
-var _light_theme: Theme  # built the first time it's turned on
+var _light_theme: Theme # built the first time it's turned on
 
 func _ready() -> void:
 	get_window().min_size = MIN_WINDOW_SIZE
@@ -49,16 +49,20 @@ func _on_shortcut(action: StringName) -> void:
 		&"go_to_end":
 			Transport.seek(Session.project.get_length())
 		_:
-			print("Shortcut: ", action)  # other shortcutss come in later
+			print("Shortcut: ", action) # other shortcutss come in later
 
 func _on_view_menu_id_pressed(id: int) -> void:
-	if id == ViewMenuId.LIGHT_THEME:
-		var view_menu: PopupMenu = %View
-		var index := view_menu.get_item_index(id)
-		# PopupMenu doesnt tick its own checkboxes, so toggle it here
-		var light_on := not view_menu.is_item_checked(index)
-		view_menu.set_item_checked(index, light_on)
-		_toggle_light_theme(light_on)
+	var view_menu: PopupMenu = %View
+	var index := view_menu.get_item_index(id)
+	# PopupMenu doesnt tick its own checkboxes, so toggle it here
+	var checked := not view_menu.is_item_checked(index)
+	view_menu.set_item_checked(index, checked)
+	match id:
+		ViewMenuId.LIGHT_THEME:
+			_toggle_light_theme(checked)
+		ViewMenuId.RULER_SECONDS:
+			Session.show_seconds = checked
+
 
 # toggle between light and dark mode
 func _toggle_light_theme(on: bool) -> void:

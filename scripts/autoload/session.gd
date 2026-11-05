@@ -2,10 +2,17 @@ extends Node
 ## editor state which is shared by the whole ui. for now: the open project
 
 signal project_changed(project: ProjectData)
+## something about how the timeline is shown changed (time format for now, zoom later)
+signal view_changed
 
 var project: ProjectData = ProjectData.new()
 ## zoom: how many pixels wide one second of the project is
 var pixels_per_second: float = 40.0
+## ruler shows minutes:seconds (like audacity) instead of bars (like ableton)
+var show_seconds: bool = false:
+	set(value):
+		show_seconds = value
+		view_changed.emit()
 
 func open_project(new_project: ProjectData) -> void:
 	project = new_project
