@@ -5,13 +5,24 @@ import os
 # Initialize the environment from godot-cpp's SConstruct
 env = SConscript("godot-cpp/SConstruct")
 
+# Miniaudio is vendored as a single header.
+env.Append(CPPPATH=["third_party/miniaudio"])
+
 # If you are on Windows, you might need specific compiler flags
 # if env["platform"] == "windows":
 #     env.Append(CCFLAGS=["/EHsc"])
 
 # List all your C++ source files here for Rowan's backend
 sources = [
-    # Add future backend files here (e.g., "src/effects_chain.cpp")
+    "src/register_types.cpp",
+    "src/test_cpp.cpp",
+    "src/audio_engine/miniaudio.cpp",
+    "src/audio_engine/audio_device.cpp",
+    "src/audio_engine/audio_engine.cpp",
+    "src/audio_engine/audio_clip.cpp",
+    "src/audio_engine/audio_decoder.cpp",
+    "src/audio_engine/mixer_core.cpp",
+    "src/audio_engine/track_channel.cpp",
 ]
 
 # Build the shared library depending on the target platform
@@ -21,9 +32,9 @@ if env["platform"] == "windows":
         "bin/daw_backend.windows.template_debug.x86_64.dll",
         source=sources,
     )
-elif env["platform"] == "linuxbsd":
+elif env["platform"] == "linux":
     library = env.SharedLibrary(
-        "bin/daw_backend.linux.template_debug.x86_64.so",
+        "bin/libdaw_backend.linux.template_debug.x86_64.so",
         source=sources,
     )
 elif env["platform"] == "macos":

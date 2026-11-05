@@ -122,6 +122,7 @@ Related software:
 * MeloMIDI (https://github.com/4321ba/MeloMIDI): wave-to-MIDI editor built in Godot (Obj. 5).
 * WaoN (https://github.com/kichiki/WaoN): wave-to-notes transcriber with a phase vocoder (Obj. 5, 6).
 * ISSE (https://sourceforge.net/projects/isse/): spectrogram-based source separation editor (Obj. 4).
+* MiniAudio (https://github.com/mackron/miniaudio)
 
 ## References
 
