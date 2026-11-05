@@ -28,8 +28,8 @@ func _on_project_changed(project: ProjectData) -> void:
 
 
 ## godot calls this whenever the ruler needs repainting (queue_redraw, resize, first frame).
-## everything drawn here is in the ruler's own coords, so x=0 is the start of the song
-## (the ruler already sits after the 200px header + gap, same as the lanes)
+## everything drawn here is in the ruler's own coords, so x=0 is the left edge of what's showing
+## (scroll_seconds into the song). the ruler already sits after the 200px header + gap, same as the lanes
 func _draw() -> void:
 	# pull the text color + font from the theme instead of hardcoding white,
 	# otherwise light mode would leave white lines on a white ruler
@@ -46,23 +46,30 @@ func _draw() -> void:
 	# seconds mode: a numbered line every "nice" step that fits, one tick halfway between
 	var label_step: float
 	var tick_step: float
+	var bar_len: float
 	if Session.show_seconds:
 		label_step = _seconds_step()
 		tick_step = label_step / 2.0
 	else:
-		tick_step = 60.0 / _project.bpm
-		label_step = tick_step * _project.beats_per_bar
+		var beat := 60.0 / _project.bpm
+		bar_len = beat * _project.beats_per_bar
+		label_step = bar_len
+		# zoomed out: number every 2nd, 4th, 8th... bar so the numbers dont overlap
+		while label_step * pps < MIN_LABEL_SPACING:
+			label_step *= 2.0
+		# a tick per beat if they fit, otherwise fall back to a tick per bar
+		tick_step = beat if beat * pps >= MIN_TICK_SPACING else bar_len
 	
 	# how wide those are on screen right now (seconds * px per second).
 	# at 120 bpm and 40 px/s thats 0.5s * 40 = 20px a beat, 80px a bar
 	var tick_px := tick_step * pps
 	var label_px := label_step * pps
 	
-	# walk label by label from the left edge and stop once we go past the ruler's width, 
-	# no point drawing lines nobody can see
-	var i := 0
-	while i * label_px <= size.x:
-		var x := i * label_px
+	var scroll := Session.scroll_seconds
+	# start at the last label at or before the left edge, no point looping over everything scrolled past
+	var i := floori(scroll / label_step)
+	while (i * label_step - scroll) * pps <= size.x:
+		var x := (i * label_step - scroll) * pps
 		
 		# full height line marks the start of each bar/labelled time
 		draw_line(Vector2(x, 0), Vector2(x, size.y), color)
@@ -71,7 +78,7 @@ func _draw() -> void:
 		# so bar index 0 shows "1", but seconds start at 0:00 like a clock.
 		# draw_string puts the text's baseline (bottom of the letters) at the y we give it,
 		# so we push it down by the font's ascent or it'd get cut off the top
-		var text := _format_seconds(i * label_step) if Session.show_seconds else str(i + 1)
+		var text := _format_seconds(i * label_step) if Session.show_seconds else str(roundi(i * label_step / bar_len) + 1)
 		draw_string(font, Vector2(x + 4, font.get_ascent(font_size)), text,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 		
@@ -85,7 +92,6 @@ func _draw() -> void:
 				var tick_x := x + t * tick_px
 				# only the bottom 40% of the ruler, so they read as smaller than the numbered lines
 				draw_line(Vector2(tick_x, size.y * 0.6), Vector2(tick_x, size.y), faded)
-
 		i += 1
 
 

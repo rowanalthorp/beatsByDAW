@@ -15,6 +15,8 @@ func _ready() -> void:
 	%ToStart.pressed.connect(Transport.seek.bind(0.0))
 	%ToEnd.pressed.connect(_on_to_end_pressed)
 	Transport.playing_changed.connect(_on_playing_changed)
+	%ZoomIn.pressed.connect(Session.zoom_in)
+	%ZoomOut.pressed.connect(Session.zoom_out)
 
 
 ## item ids match TrackData.Kind: 0 = audio, 1 = instrument

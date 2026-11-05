@@ -98,6 +98,7 @@ layout_mode = 2
 [node name="Ruler" type="Panel" parent="Layout/MainSplit/Timeline/RulerRow" unique_id=1317750034]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 28)
+clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("5_jfgcv")
@@ -133,6 +134,7 @@ mouse_filter = 2
 color = Color(0.29803923, 0.8509804, 0.39215687, 1)
 
 [node name="HScrollBar" type="HScrollBar" parent="Layout/MainSplit/Timeline" unique_id=1746675159]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="EffectsSidebar" type="PanelContainer" parent="Layout/MainSplit" unique_id=376513993]

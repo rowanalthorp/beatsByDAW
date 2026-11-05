@@ -9,6 +9,7 @@ static func create() -> ProjectData:
 	project.add_track(_track("Drums", TrackData.Kind.AUDIO, [["Beat", 0.0, 8.0], ["Fill", 9.0, 4.0]]))
 	project.add_track(_track("Vocals", TrackData.Kind.AUDIO, [["Verse", 2.0, 10.0]]))
 	project.add_track(_track("Keys", TrackData.Kind.AUDIO, [["Chords", 0.0, 12.0]]))
+	project.add_track(_track("Test", TrackData.Kind.AUDIO, [["Test", 20.0, 30.0]]))
 	return project
 
 

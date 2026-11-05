@@ -156,6 +156,7 @@ layout_mode = 2
 columns = 2
 
 [node name="ZoomIn" type="Button" parent="ZoomGroup" unique_id=1347024175]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Zoom In"
@@ -164,6 +165,7 @@ icon_alignment = 1
 expand_icon = true
 
 [node name="ZoomOut" type="Button" parent="ZoomGroup" unique_id=597698981]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Zoom Out"
@@ -172,6 +174,7 @@ icon_alignment = 1
 expand_icon = true
 
 [node name="ZoomFit" type="Button" parent="ZoomGroup" unique_id=1410664041]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Fit to Screen"

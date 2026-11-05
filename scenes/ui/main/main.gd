@@ -1,15 +1,14 @@
 extends Control
 
-const MIN_WINDOW_SIZE := Vector2i(1024, 576)
+# enum since we will prob get more entries with zooming in, out, and expanding
+enum ViewMenuId { LIGHT_THEME, RULER_SECONDS }
 
+const MIN_WINDOW_SIZE := Vector2i(1024, 576)
 # StringName instead of String because actions are converted to StringNames anyways, and this is technically more efficient
 const SHORTCUT_ACTIONS: Array[StringName] = [
 	&"play_pause", &"go_to_start", &"go_to_end",
 	&"delete_selected", &"zoom_in", &"zoom_out", &"zoom_fit",
 ]
-
-# enum since we will prob get more entries with zooming in, out, and expanding
-enum ViewMenuId { LIGHT_THEME, RULER_SECONDS }
 
 var _dark_theme: Theme
 var _light_theme: Theme # built the first time it's turned on
@@ -48,8 +47,12 @@ func _on_shortcut(action: StringName) -> void:
 			Transport.seek(0.0)
 		&"go_to_end":
 			Transport.seek(Session.project.get_length())
+		&"zoom_in":
+			Session.zoom_in()
+		&"zoom_out":
+			Session.zoom_out()
 		_:
-			print("Shortcut: ", action) # other shortcutss come in later
+			print("Shortcut: ", action) # catch everything with no handler
 
 func _on_view_menu_id_pressed(id: int) -> void:
 	var view_menu: PopupMenu = %View
