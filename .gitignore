@@ -39,11 +39,10 @@ mono_crash.*.json
 godot-cpp/bin/
 godot-cpp/gen/
 
-# Compiled extension binaries (uncomment if you want teammates to build local binaries instead of tracking them)
-# bin/*.dll
-# bin/*.so
-# bin/*.dylib
-
+# Compiled extension binaries
+bin/*.dll
+bin/*.so
+bin/*.dylib
 # Brett's MIR prototype: dataset and Python env (will end up getting removed later on)
 mir/data/
 mir/.venv/

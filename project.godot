@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 Session="*uid://d2nrdlncx2bir"
 Transport="*uid://u5dgeji016xk"
+Test="*uid://dkpf1bcknddk3"
 
 [display]
 
