@@ -16,3 +16,11 @@ func _refresh() -> void:
 	# minus the scroll so clips slide left as you scroll right
 	offset_left = (clip.start - Session.scroll_seconds) * Session.pixels_per_second
 	offset_right = offset_left + clip.length * Session.pixels_per_second
+
+
+func _gui_input(event: InputEvent) -> void:
+	var click := event as InputEventMouseButton
+	# double_click is godot's own flag for a quick second click, so we dont have to time clicks ourselves
+	if click and click.double_click and click.button_index == MOUSE_BUTTON_LEFT:
+		accept_event()
+		Session.request_open_clip(clip)

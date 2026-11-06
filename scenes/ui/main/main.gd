@@ -9,9 +9,12 @@ const SHORTCUT_ACTIONS: Array[StringName] = [
 	&"play_pause", &"go_to_start", &"go_to_end",
 	&"delete_selected", &"zoom_in", &"zoom_out", &"zoom_fit",
 ]
+const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll_window.tscn")
 
 var _dark_theme: Theme
 var _light_theme: Theme # built the first time it's turned on
+var _piano_window: PianoRollWindow # made the first time an instrument clip is opened, then reused
+
 
 func _ready() -> void:
 	get_window().min_size = MIN_WINDOW_SIZE
@@ -20,7 +23,9 @@ func _ready() -> void:
 	var tracks_menu: PopupMenu = %Tracks
 	tracks_menu.id_pressed.connect(_on_add_track_id_pressed)
 	view_menu.id_pressed.connect(_on_view_menu_id_pressed)
+	Session.open_clip_requested.connect(_on_open_clip_requested)
 	Session.open_project(DemoProject.create())
+	
 
 ## runs whenever any input is pressed
 func _input(event: InputEvent) -> void:
@@ -34,9 +39,11 @@ func _input(event: InputEvent) -> void:
 			_on_shortcut(action)
 			return
 
+
 ## returns if the user is currently typing in a text box
 func _is_typing() -> bool:
 	return get_viewport().gui_get_focus_owner() is LineEdit
+
 
 ## func for when shortcuts are pressed
 func _on_shortcut(action: StringName) -> void:
@@ -53,6 +60,7 @@ func _on_shortcut(action: StringName) -> void:
 			Session.zoom_out()
 		_:
 			print("Shortcut: ", action) # catch everything with no handler
+
 
 func _on_view_menu_id_pressed(id: int) -> void:
 	var view_menu: PopupMenu = %View
@@ -76,6 +84,20 @@ func _toggle_light_theme(on: bool) -> void:
 	var clear: Color = ProjectSettings.get_setting("rendering/environment/defaults/default_clear_color")
 	RenderingServer.set_default_clear_color(ThemeTools.flip(clear) if on else clear)
 
+
 ## item ids match TrackData.Kind: 0 = audio, 1 = instrument.
 func _on_add_track_id_pressed(id: int) -> void:
 	Session.add_new_track(id as TrackData.Kind)
+
+
+## a clip was double-clicked: instrument clips open the piano roll, audio clip shenanigans come in later
+func _on_open_clip_requested(clip: ClipData) -> void:
+	var note_clip := clip as NoteClipData
+	if note_clip == null:
+		return
+	if _piano_window == null:
+		_piano_window = PIANO_ROLL_WINDOW.instantiate()
+		# its own real OS window instead of being drawn inside the main one, so it can go anywhere on screen
+		_piano_window.force_native = true
+		add_child(_piano_window)
+	_piano_window.open_clip(note_clip)
