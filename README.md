@@ -111,7 +111,7 @@ beatsByDAW will provide the core tools to put together a track from start to fin
 
 * Obj. 1: DAW interfaces are largely built on metaphors from analog hardware such as tape machines and mixing desks [1]; beatsByDAW keeps the familiar track/timeline layout but limits features so it stays approachable for beginners.
 * Obj. 2: Mixing, panning, fades, and delay-based processing are standard digital audio effects [2], implemented here as separate processing units in the C++ backend.
-* Obj. 3: Karplus-Strong synthesis produces plucked-string and drum sounds from a noise burst in a filtered delay line [3]; the guitar uses the ring-buffer structure from [4], and MIDI import/export follows the Standard MIDI File format [5].
+* Obj. 3: Karplus-Strong synthesis produces plucked-string and drum sounds from a noise burst in a filtered delay line [3]; the guitar uses the ring-buffer structure from [4], the piano uses additive synthesis with per-partial exponential decay [21], and MIDI import/export follows the Standard MIDI File format [5].
 * Obj. 4: EQ filters use the biquad coefficient formulas from [6], the reverb uses Schroeder's comb and all-pass design [7], and noise reduction subtracts an estimated noise spectrum from each frame [8].
 * Obj. 5: Onsets are detected with spectral flux [9] and beats with dynamic programming [10], which needs no training data, unlike learned TCN trackers [11]. Pitch is detected with YIN [12] and corrected pitch is resynthesized with PSOLA [13]. Tempo and beat accuracy are measured on Ballroom [14] and pitch accuracy on MDB-stem-synth [15] using mir_eval [16], with the FMP notebook implementations [17] as baselines.
 * Obj. 6: Time-stretching uses a phase-locked vocoder to reduce phasiness [18], WSOLA as a time-domain alternative [19], and harmonic/percussive separation to keep transients sharp [20].
@@ -165,3 +165,5 @@ Related software:
 [19] "Waveform Similarity Based Overlap-Add (WSOLA) for Time-Scale Modification of Speech: Structures and Evaluation," 1993 [Online]. Available: https://www.isca-archive.org/eurospeech_1993/roelands93_eurospeech.html
 
 [20] "Improving Time-Scale Modification of Music Signals Using Harmonic-Percussive Separation," 2014 [Online]. Available: https://doi.org/10.1109/LSP.2013.2294023
+
+[21] J. O. Smith, "Spectral Audio Signal Processing," 2011 [Online]. Available: https://ccrma.stanford.edu/~jos/sasp/
