@@ -63,7 +63,6 @@ func _draw() -> void:
 	# how wide those are on screen right now (seconds * px per second).
 	# at 120 bpm and 40 px/s thats 0.5s * 40 = 20px a beat, 80px a bar
 	var tick_px := tick_step * pps
-	var label_px := label_step * pps
 	
 	var scroll := Session.scroll_seconds
 	# start at the last label at or before the left edge, no point looping over everything scrolled past
