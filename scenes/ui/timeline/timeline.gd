@@ -91,6 +91,7 @@ func _on_scroll_changed(value: float) -> void:
 ## sizes the scroll bar to the song: the whole bar is the song (plus padding),
 ## the draggable part (page) is how much of it fits on screen right now
 func _update_scrollbar() -> void:
+	Session.lane_width = %Ruler.size.x # the ruler is exactly as wide as the visible lanes
 	# typed float, not := because %Ruler is just a Node to the type checker so .size cant be inferred
 	var visible_seconds: float = %Ruler.size.x / Session.pixels_per_second
 	%HScrollBar.max_value = maxf(Session.project.get_length() + SCROLL_PADDING, visible_seconds)

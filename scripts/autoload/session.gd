@@ -30,6 +30,9 @@ var scroll_seconds: float = 0.0:
 		scroll_seconds = maxf(value, 0.0) # cant scroll to before the song starts
 		view_changed.emit()
 
+## how many px wide the visible lane area is. timeline keeps this up to date so zoom to fit knows how much room there is
+var lane_width: float = 0.0
+
 
 func open_project(new_project: ProjectData) -> void:
 	project = new_project
@@ -44,6 +47,16 @@ func zoom_in() -> void:
 
 func zoom_out() -> void:
 	pixels_per_second /= ZOOM_STEP
+
+
+## zoom so the whole song fits on screen, and scroll back to the start
+func zoom_to_fit() -> void:
+	var length := project.get_length()
+	if length <= 0.0 or lane_width <= 0.0:
+		return # empty song, or the timeline hasnt been laid out yet. nothing to fit
+	scroll_seconds = 0.0
+	# 95% of the width so the last clip isnt jammed right against the edge
+	pixels_per_second = lane_width * 0.95 / length
 
 
 ## adds an empty track at the bottom, named like "Audio 3" or something

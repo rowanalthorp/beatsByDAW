@@ -58,6 +58,8 @@ func _on_shortcut(action: StringName) -> void:
 			Session.zoom_in()
 		&"zoom_out":
 			Session.zoom_out()
+		&"zoom_fit":
+			Session.zoom_to_fit()
 		_:
 			print("Shortcut: ", action) # catch everything with no handler
 

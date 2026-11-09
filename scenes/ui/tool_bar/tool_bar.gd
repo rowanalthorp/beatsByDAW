@@ -17,6 +17,7 @@ func _ready() -> void:
 	Transport.playing_changed.connect(_on_playing_changed)
 	%ZoomIn.pressed.connect(Session.zoom_in)
 	%ZoomOut.pressed.connect(Session.zoom_out)
+	%ZoomFit.pressed.connect(Session.zoom_to_fit)
 
 
 ## item ids match TrackData.Kind: 0 = audio, 1 = instrument
