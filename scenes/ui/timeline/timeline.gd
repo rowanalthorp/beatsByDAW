@@ -21,6 +21,7 @@ func _ready() -> void:
 	Session.view_changed.connect(_on_view_changed)
 	%HScrollBar.value_changed.connect(_on_scroll_changed)
 	%Ruler.resized.connect(_update_scrollbar) # window/sidebar size changes how much of the song fits
+	Transport.position_changed.connect(_follow_playhead)
 
 
 ## rebuilds every row and listens to the new projects track signals
@@ -101,3 +102,16 @@ func _update_scrollbar() -> void:
 	var max_scroll: float = maxf(%HScrollBar.max_value - visible_seconds, 0.0)
 	if Session.scroll_seconds > max_scroll:
 		Session.scroll_seconds = max_scroll
+
+
+## while playing, once the playhead goes off the right edge, flip the view forward
+## so it starts back at the left, kinda like how ableton and audacity do it
+func _follow_playhead(seconds: float) -> void:
+	if not Transport.playing:
+		return # seeking while paused (ruler click, to start/end) shouldnt drag the view around
+	var visible_seconds: float = %Ruler.size.x / Session.pixels_per_second
+	var max_scroll: float = maxf(%HScrollBar.max_value - visible_seconds, 0.0)
+	# the fake clock keeps counting after the song ends, so once we're scrolled as far as we
+	# can go, stop trying or it'd set the scroll (and redraw everything) every frame for nothing
+	if seconds >= Session.scroll_seconds + visible_seconds and Session.scroll_seconds < max_scroll:
+		Session.scroll_seconds = minf(seconds, max_scroll)

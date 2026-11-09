@@ -135,6 +135,7 @@ color = Color(0.29803923, 0.8509804, 0.39215687, 1)
 
 [node name="HScrollBar" type="HScrollBar" parent="Layout/MainSplit/Timeline" unique_id=1746675159]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
 [node name="EffectsSidebar" type="PanelContainer" parent="Layout/MainSplit" unique_id=376513993]
