@@ -7,6 +7,13 @@ static func make_light(dark: Theme) -> Theme:
 	# duplicate() copies a list, but keeps pointers to the same values, while duplicate(true) duplicates the values with new pointers
 	var light: Theme = ThemeDB.get_default_theme().duplicate(true) 
 	light.merge_with(dark.duplicate(true))
+	# godots default theme sets every node type's font size to 16 by name, but main_theme only sets a few
+	# and lets the rest fall back to its default_font_size (14). those copied 16s win over the fallback, so
+	# labels etc got bigger in light mode and pushed everything down. clear any size dark doesnt set itself
+	for type: String in light.get_font_size_type_list():
+		for size_name: String in light.get_font_size_list(type):
+			if not size_name in dark.get_font_size_list(type):
+				light.clear_font_size(size_name, type)
 	var flipped: Dictionary = {}  # one stylebox can be shared by several types (flip it once or things get screwy)
 	for type: String in light.get_type_list():
 		for colour_name: String in light.get_color_list(type):
