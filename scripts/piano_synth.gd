@@ -24,7 +24,7 @@ func note_on(pitch: int, velocity: float = 1.0) -> void:
 			v.releasing = true
 	if _voices.size() >= MAX_VOICES:
 		_voices.remove_at(0)
-	_voices.append(NoteRenderer.make_voice(pitch, velocity))
+	_voices.append(NoteRenderer.make_voice(pitch, velocity, 1.0 / MIX_RATE))
 
 
 func note_off(pitch: int) -> void:
