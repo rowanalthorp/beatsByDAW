@@ -27,7 +27,8 @@ func _gui_input(event: InputEvent) -> void:
 	if motion and _dragging:
 		# move the clip by however far the mouse is from where it grabbed. the block moves
 		# right away (clip.changed -> _refresh), so the grab point stays under the mouse
-		clip.start += (motion.position.x - _grab_x) / Session.pixels_per_second
+		# snapped to the nearest beat if snap is on
+		clip.start = Session.snap(clip.start + (motion.position.x - _grab_x) / Session.pixels_per_second)
 		accept_event()
 		return
 	var click := event as InputEventMouseButton

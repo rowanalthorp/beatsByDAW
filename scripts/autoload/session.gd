@@ -41,6 +41,8 @@ var selected_clip: ClipData = null:
 		selected_clip = value
 		selection_changed.emit()
 
+## when on, dragged clips land on the nearest beat. the checkbox in the bottom bar sets this
+var snap_to_beat: bool = false
 
 func open_project(new_project: ProjectData) -> void:
 	project = new_project
@@ -91,3 +93,11 @@ func delete_selected() -> void:
 			break
 	# clear it even if no track had it (its track might have been deleted already)
 	selected_clip = null
+
+
+## rounds a time (seconds) to the nearest beat if snap is on, otherwise gives it back untouched.
+## one beat is 60 / bpm seconds, snappedf rounds to the nearest multiple of that
+func snap(seconds: float) -> float:
+	if not snap_to_beat:
+		return seconds
+	return snappedf(seconds, 60.0 / project.bpm)

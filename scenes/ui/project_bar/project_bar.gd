@@ -11,6 +11,8 @@ func _ready() -> void:
 	%TempoSpin.value_changed.connect(_on_tempo_changed)
 	Session.project_changed.connect(_on_project_changed)
 	_on_project_changed(Session.project)
+	%SnapCheck.toggled.connect(_on_snap_toggled)
+	Session.snap_to_beat = %SnapCheck.button_pressed # start matching however the box is set in the scene
 
 
 ## shows minutes:seconds.milliseconds, like 01:05.250.
@@ -49,3 +51,7 @@ func _on_tempo_changed(value: float) -> void:
 func _show_tempo() -> void:
 	# no_signal so filling in the box doesnt fire value_changed and set the bpm all over again
 	%TempoSpin.set_value_no_signal(_project.bpm)
+
+
+func _on_snap_toggled(on: bool) -> void:
+	Session.snap_to_beat = on
