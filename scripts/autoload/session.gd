@@ -6,6 +6,8 @@ signal project_changed(project: ProjectData)
 signal view_changed
 ## a clip was double-clicked and wants its editor opened (piano roll for instrument clips)
 signal open_clip_requested(clip: ClipData)
+## a different clip got clicked (or nothing is selected anymore)
+signal selection_changed
 
 const MIN_ZOOM := 2.0 # px per second. all the way out, a 5 min song is ~600px wide
 const MAX_ZOOM := 1000.0 # px per second. all the way in, one beat at 120 bpm is 500px
@@ -32,6 +34,12 @@ var scroll_seconds: float = 0.0:
 
 ## how many px wide the visible lane area is. timeline keeps this up to date so zoom to fit knows how much room there is
 var lane_width: float = 0.0
+
+## the clip that was clicked last. null means nothing is selected
+var selected_clip: ClipData = null:
+	set(value):
+		selected_clip = value
+		selection_changed.emit()
 
 
 func open_project(new_project: ProjectData) -> void:
@@ -71,3 +79,15 @@ func add_new_track(kind: TrackData.Kind) -> void:
 ## godot was giving a warning if I didn't emit the signal this way so
 func request_open_clip(clip: ClipData) -> void:
 	open_clip_requested.emit(clip)
+
+
+## takes the selected clip off whatever track its on
+func delete_selected() -> void:
+	if selected_clip == null:
+		return
+	for track: TrackData in project.tracks:
+		if selected_clip in track.clips:
+			track.remove_clip(selected_clip)
+			break
+	# clear it even if no track had it (its track might have been deleted already)
+	selected_clip = null
