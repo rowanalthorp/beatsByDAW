@@ -4,6 +4,9 @@ extends Panel
 
 var clip: ClipData
 
+var _dragging := false
+var _grab_x := 0.0 # where on the clip the mouse grabbed it, in px from the clip's left edge
+
 func setup(new_clip: ClipData) -> void:
 	clip = new_clip
 	clip.changed.connect(_refresh)  # redraw when start/length/name change
@@ -20,16 +23,28 @@ func _refresh() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
+	var motion := event as InputEventMouseMotion
+	if motion and _dragging:
+		# move the clip by however far the mouse is from where it grabbed. the block moves
+		# right away (clip.changed -> _refresh), so the grab point stays under the mouse
+		clip.start += (motion.position.x - _grab_x) / Session.pixels_per_second
+		accept_event()
+		return
 	var click := event as InputEventMouseButton
-	if not click or not click.pressed or click.button_index != MOUSE_BUTTON_LEFT:
+	if not click or click.button_index != MOUSE_BUTTON_LEFT:
 		return
 	# eat the click so the lane behind the clip doesnt also get it and deselect
 	accept_event()
+	if not click.pressed:
+		_dragging = false # let go, drag's done
+		return
 	# double_click is godot's own flag for a quick second click, so we dont have to time clicks ourselves
 	if click.double_click:
 		Session.request_open_clip(clip)
 	else:
 		Session.selected_clip = clip
+		_dragging = true
+		_grab_x = click.position.x
 
 
 ## selected clip gets an outline. uses the label text colour so it flips with light/dark mode
