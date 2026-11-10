@@ -49,3 +49,24 @@ static func sample_voice(v: Dictionary, dt: float) -> float:
 		v.amps[j] *= v.decays[j]
 		s += v.amps[j] * sin(TAU * v.freq * PARTIALS[j][0] * v.t)
 	return s * env * v.vel * MASTER_GAIN
+
+static func render_note(pitch: int, velocity: float, duration_seconds: float) -> AudioStreamWAV:
+	var sample_rate := 44100
+	var dt := 1.0 / sample_rate
+	var release_seconds := RELEASE * log(1000.0)
+	var held_samples := maxi(1, roundi(duration_seconds * sample_rate))
+	var total_samples := held_samples + ceili(release_seconds * sample_rate)
+	var voice := make_voice(pitch, velocity, dt)
+	var data := PackedByteArray()
+	data.resize(total_samples * 2)
+	for i in total_samples:
+		if i == held_samples:
+			voice.releasing = true
+		var sample_value := tanh(sample_voice(voice, dt))
+		data.encode_s16(i * 2, roundi(sample_value * 32767.0))
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = sample_rate
+	wav.stereo = false
+	wav.data = data
+	return wav
