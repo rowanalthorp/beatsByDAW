@@ -8,6 +8,8 @@ signal view_changed
 signal open_clip_requested(clip: ClipData)
 ## a different clip got clicked (or nothing is selected anymore)
 signal selection_changed
+## a clip was moved or deleted, so the song might be a different length now
+signal song_length_changed
 
 const MIN_ZOOM := 2.0 # px per second. all the way out, a 5 min song is ~600px wide
 const MAX_ZOOM := 1000.0 # px per second. all the way in, one beat at 120 bpm is 500px
@@ -83,6 +85,11 @@ func request_open_clip(clip: ClipData) -> void:
 	open_clip_requested.emit(clip)
 
 
+## clip_view calls this when a drag ends. same warning thing as request_open_clip
+func report_clip_moved() -> void:
+	song_length_changed.emit()
+
+
 ## takes the selected clip off whatever track its on
 func delete_selected() -> void:
 	if selected_clip == null:
@@ -93,6 +100,7 @@ func delete_selected() -> void:
 			break
 	# clear it even if no track had it (its track might have been deleted already)
 	selected_clip = null
+	song_length_changed.emit()
 
 
 ## rounds a time (seconds) to the nearest beat if snap is on, otherwise gives it back untouched.

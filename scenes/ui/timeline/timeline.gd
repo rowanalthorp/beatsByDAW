@@ -22,6 +22,7 @@ func _ready() -> void:
 	%HScrollBar.value_changed.connect(_on_scroll_changed)
 	%Ruler.resized.connect(_update_scrollbar) # window/sidebar size changes how much of the song fits
 	Transport.position_changed.connect(_follow_playhead)
+	Session.song_length_changed.connect(_update_scrollbar) # clip dragged or deleted, the song might be longer/shorter
 
 
 ## rebuilds every row and listens to the new projects track signals

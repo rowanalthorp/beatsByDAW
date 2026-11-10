@@ -37,6 +37,8 @@ func _gui_input(event: InputEvent) -> void:
 	# eat the click so the lane behind the clip doesnt also get it and deselect
 	accept_event()
 	if not click.pressed:
+		if _dragging:
+			Session.report_clip_moved() # might have dragged the last clip further out, so the song got longer
 		_dragging = false # let go, drag's done
 		return
 	# double_click is godot's own flag for a quick second click, so we dont have to time clicks ourselves
@@ -46,6 +48,7 @@ func _gui_input(event: InputEvent) -> void:
 		Session.selected_clip = clip
 		_dragging = true
 		_grab_x = click.position.x
+
 
 
 ## selected clip gets an outline. uses the label text colour so it flips with light/dark mode
