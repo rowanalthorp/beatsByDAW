@@ -6,8 +6,8 @@
 [ext_resource type="Texture2D" uid="uid://psegxtr6qg4v" path="res://assets/icons/x.svg" id="4_i5l5t"]
 [ext_resource type="Script" uid="uid://cuh52vsql3xna" path="res://scenes/ui/timeline/timeline.gd" id="4_ubw8e"]
 [ext_resource type="PackedScene" uid="uid://7k8gnec5d1ko" path="res://scenes/ui/project_bar/project_bar.tscn" id="4_ye4sr"]
-[ext_resource type="PackedScene" uid="uid://cl1uuww6tf0hh" path="res://scenes/ui/effect_slot/effect_slot.tscn" id="5_1xy46"]
 [ext_resource type="Script" uid="uid://bi3ef1v0lt0rg" path="res://scenes/ui/timeline/ruler.gd" id="5_jfgcv"]
+[ext_resource type="Script" uid="uid://chm60c7jy5372" path="res://scenes/ui/main/effects_sidebar.gd" id="6_qi6ru"]
 
 [node name="Main" type="Control" unique_id=1762842026]
 layout_mode = 3
@@ -139,9 +139,9 @@ custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
 [node name="EffectsSidebar" type="PanelContainer" parent="Layout/MainSplit" unique_id=376513993]
-visible = false
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
+script = ExtResource("6_qi6ru")
 
 [node name="VBox" type="VBoxContainer" parent="Layout/MainSplit/EffectsSidebar" unique_id=2123073200]
 layout_mode = 2
@@ -150,10 +150,12 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="TrackName" type="Label" parent="Layout/MainSplit/EffectsSidebar/VBox/Header" unique_id=1446941967]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Effects: Drums"
 
 [node name="CloseButton" type="Button" parent="Layout/MainSplit/EffectsSidebar/VBox/Header" unique_id=1829635191]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
 size_flags_horizontal = 10
@@ -169,16 +171,12 @@ size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
 [node name="EffectList" type="VBoxContainer" parent="Layout/MainSplit/EffectsSidebar/VBox/EffectScroll" unique_id=1544517349]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="EffectSlot" parent="Layout/MainSplit/EffectsSidebar/VBox/EffectScroll/EffectList" unique_id=1487123405 instance=ExtResource("5_1xy46")]
-layout_mode = 2
-
-[node name="EffectSlot2" parent="Layout/MainSplit/EffectsSidebar/VBox/EffectScroll/EffectList" unique_id=1725349368 instance=ExtResource("5_1xy46")]
-layout_mode = 2
-
 [node name="AddEffectButton" type="MenuButton" parent="Layout/MainSplit/EffectsSidebar/VBox" unique_id=1360636689]
+unique_name_in_owner = true
 layout_mode = 2
 text = "+ Add effect"
 flat = false

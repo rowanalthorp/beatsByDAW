@@ -16,6 +16,7 @@ func _ready() -> void:
 	%PanSlider.value_changed.connect(_on_pan_changed)
 	%DeleteButton.pressed.connect(_on_delete_pressed)
 	%Lane.gui_input.connect(_on_lane_gui_input)
+	%EffectsButton.pressed.connect(_on_effects_pressed)
 
 
 func setup(new_track: TrackData) -> void:
@@ -81,3 +82,7 @@ func _on_clip_removed(clip: ClipData) -> void:
 		if view.clip == clip:
 			view.queue_free()
 			return
+
+
+func _on_effects_pressed() -> void:
+	Session.request_effects(track)

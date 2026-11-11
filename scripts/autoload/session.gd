@@ -10,6 +10,8 @@ signal open_clip_requested(clip: ClipData)
 signal selection_changed
 ## a clip was moved or deleted, so the song might be a different length now
 signal song_length_changed
+## a track's Effects button was pressed and wants the sidebar opened for it
+signal effects_requested(track: TrackData)
 
 const MIN_ZOOM := 2.0 # px per second. all the way out, a 5 min song is ~600px wide
 const MAX_ZOOM := 1000.0 # px per second. all the way in, one beat at 120 bpm is 500px
@@ -88,6 +90,11 @@ func request_open_clip(clip: ClipData) -> void:
 ## clip_view calls this when a drag ends. same warning thing as request_open_clip
 func report_clip_moved() -> void:
 	song_length_changed.emit()
+
+
+## same warning thing as request_open_clip
+func request_effects(track: TrackData) -> void:
+	effects_requested.emit(track)
 
 
 ## takes the selected clip off whatever track its on
