@@ -3,7 +3,7 @@ extends Control
 ## Temporary button for the piano roll window.
 ## To be replaced with the actual main when available.
 
-const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll_window.tscn")
+const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll/piano_roll_window.tscn")
 
 var _piano_window: Window
 
