@@ -5,3 +5,9 @@ extends ClipData
 ## from the start of this clip (not the song), so moving the clip moves its notes with it
 
 @export var notes: Array[Dictionary] = []
+
+## absolute path of rendered wav for the engine, empty until rendered
+var wav_path := ""
+
+## true when notes changed since the last render
+var notes_dirty := true

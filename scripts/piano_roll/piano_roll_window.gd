@@ -7,6 +7,7 @@ var _stream_player: AudioStreamPlayer
 
 var _playing := false
 var _playhead := 0.0
+var _clip: NoteClipData
 
 # render and cache preview pitches instead of synthesizing live
 var _pitch_cache: Dictionary = {}
@@ -24,9 +25,14 @@ var _project: ProjectData:
 @onready var _bpm_spin: SpinBox = $VBox/Toolbar/BpmSpin
 @onready var _clear_button: Button = $VBox/Toolbar/ClearButton
 
+func _mark_clip_dirty() -> void:
+	if _clip != null:
+		_clip.notes_dirty = true
 
 func _ready() -> void:
 	close_requested.connect(_on_close_requested)
+
+	_roll.notes_changed.connect(_mark_clip_dirty)
 
 	# Rendered playback
 	_stream_player = AudioStreamPlayer.new()
@@ -50,6 +56,14 @@ func _toggle_play() -> void:
 		var pattern_beats := float(_roll.bars * _roll.beats_per_bar)
 		var seconds_per_beat := 60.0 / _project.bpm
 		var wav := NoteRenderer.render_pattern(_roll.notes, pattern_beats, _project.bpm)
+		
+		if _clip != null and _clip.notes_dirty:
+			DirAccess.make_dir_recursive_absolute("user://renders")
+			var path := "user://renders/%d.wav" % _clip.get_instance_id()
+			if wav.save_to_wav(path) == OK:
+				_clip.wav_path = ProjectSettings.globalize_path(path)
+				_clip.notes_dirty = false
+		
 		# only loop the pattern end not the buffer, 
 		# so release doesn't add a gap to each repetition
 		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
@@ -81,6 +95,7 @@ func _process(_delta: float) -> void:
 ## opens the window editing this clip's notes. the roll gets the clip's own notes array (same array, not a copy),
 ## so every note placed, moved or deleted is saved straight into the clip
 func open_clip(clip: NoteClipData) -> void:
+	_clip = clip
 	if _playing:
 		_toggle_play()
 	title = "Piano Roll - " + clip.name
