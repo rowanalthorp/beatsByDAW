@@ -4,9 +4,12 @@ extends Window
 ## Play/stop transport and schedules notes on the synth.
 
 var _synth: PianoSynth
+
+var _stream_player: AudioStreamPlayer
+
 var _playing := false
 var _playhead := 0.0
-var _sounding: Array[bool] = []
+
 # the song's real project instead of a private one, so the tempo matches the main window
 var _project: ProjectData:
 	get:
@@ -21,8 +24,14 @@ var _project: ProjectData:
 func _ready() -> void:
 	close_requested.connect(_on_close_requested)
 
+	# Realtime Preview
 	_synth = PianoSynth.new()
 	add_child(_synth)
+
+	# Rendered playback
+	_stream_player = AudioStreamPlayer.new()
+	add_child(_stream_player)
+
 
 	_roll.preview_note_on.connect(_synth.note_on)
 	_roll.preview_note_off.connect(_synth.note_off)
@@ -37,12 +46,22 @@ func _ready() -> void:
 func _toggle_play() -> void:
 	_playing = not _playing
 	_play_button.text = "Stop" if _playing else "Play"
+	if _playing:
+		var pattern_beats := float(_roll.bars * _roll.beats_per_bar)
+		var seconds_per_beat := 60.0 / _project.bpm
+		var wav := NoteRenderer.render_pattern(_roll.notes, pattern_beats, _project.bpm)
+		# only loop the pattern end not the buffer, 
+		# so release doesn't add a gap to each repetition
+		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		wav.loop_end = roundi(pattern_beats * seconds_per_beat * wav.mix_rate)
+		_stream_player.stream = wav
+		_stream_player.play()
+	else:
+		_stream_player.stop()
+		_synth.all_notes_off()
 	_playhead = 0.0
-	_roll.show_playhead = _playing # show the red line only while playing
-	_sounding.clear()
-	_synth.all_notes_off()
+	_roll.show_playhead = _playing
 	_roll.queue_redraw()
-
 
 func _on_close_requested() -> void:
 	if _playing:
@@ -50,26 +69,10 @@ func _on_close_requested() -> void:
 	hide()
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if not _playing:
 		return
-	var total := float(_roll.bars * _roll.beats_per_bar)
-	_playhead += delta * _project.bpm / 60.0
-	if _playhead >= total:
-		_playhead -= total
-		_synth.all_notes_off()
-		_sounding.clear()
-	if _sounding.size() != _roll.notes.size():
-		_sounding.resize(_roll.notes.size())
-	for i in _roll.notes.size():
-		var n := _roll.notes[i]
-		var on: bool = _playhead >= n.start and _playhead < n.start + n.length
-		if on and not _sounding[i]:
-			_sounding[i] = true
-			_synth.note_on(n.pitch, n.velocity)
-		elif not on and _sounding[i]:
-			_sounding[i] = false
-			_synth.note_off(n.pitch)
+	_playhead = _stream_player.get_playback_position() / (60.0 / _project.bpm)
 	_roll.playhead_beat = _playhead
 	_roll.queue_redraw()
 
