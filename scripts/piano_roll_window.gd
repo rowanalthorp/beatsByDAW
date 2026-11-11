@@ -3,14 +3,18 @@ extends Window
 ## Popup window with the piano roll editor and piano instrument.
 ## Play/stop transport and schedules notes on the synth.
 
-var _synth: PianoSynth
-
 var _stream_player: AudioStreamPlayer
 
 var _playing := false
 var _playhead := 0.0
 
-# the song's real project instead of a private one, so the tempo matches the main window
+# render and cache preview pitches instead of synthesizing live
+var _pitch_cache: Dictionary = {}
+var _preview_players: Dictionary = {}
+const PREVIEW_SECONDS := 4.0
+
+# the song's real project instead of a private one, 
+# so the tempo matches the main window
 var _project: ProjectData:
 	get:
 		return Session.project
@@ -24,17 +28,13 @@ var _project: ProjectData:
 func _ready() -> void:
 	close_requested.connect(_on_close_requested)
 
-	# Realtime Preview
-	_synth = PianoSynth.new()
-	add_child(_synth)
-
 	# Rendered playback
 	_stream_player = AudioStreamPlayer.new()
 	add_child(_stream_player)
 
 
-	_roll.preview_note_on.connect(_synth.note_on)
-	_roll.preview_note_off.connect(_synth.note_off)
+	_roll.preview_note_on.connect(_preview_note_on)
+	_roll.preview_note_off.connect(_preview_note_off)
 	_play_button.pressed.connect(_toggle_play)
 	_clear_button.pressed.connect(_roll.clear_notes)
 
@@ -58,7 +58,6 @@ func _toggle_play() -> void:
 		_stream_player.play()
 	else:
 		_stream_player.stop()
-		_synth.all_notes_off()
 	_playhead = 0.0
 	_roll.show_playhead = _playing
 	_roll.queue_redraw()
@@ -66,6 +65,8 @@ func _toggle_play() -> void:
 func _on_close_requested() -> void:
 	if _playing:
 		_toggle_play()
+	for player in _preview_players.values():
+		player.stop()
 	hide()
 
 
@@ -97,3 +98,18 @@ func open_clip(clip: NoteClipData) -> void:
 	# clamped version shrinks it to at most 85% of the main window if it doesnt fit,
 	# so the title bar stays on screen instead of popping out the top
 	popup_centered_clamped(wanted, 0.85)
+
+func _preview_note_on(pitch: int, velocity: float = 1.0) -> void:
+	if not _pitch_cache.has(pitch):
+		_pitch_cache[pitch] = NoteRenderer.render_note(pitch, velocity, PREVIEW_SECONDS)
+	if not _preview_players.has(pitch):
+		var player := AudioStreamPlayer.new()
+		add_child(player)
+		_preview_players[pitch] = player
+	var player: AudioStreamPlayer = _preview_players[pitch]
+	player.stream = _pitch_cache[pitch]
+	player.play()
+
+func _preview_note_off(pitch: int) -> void:
+	if _preview_players.has(pitch):
+		_preview_players[pitch].stop()
