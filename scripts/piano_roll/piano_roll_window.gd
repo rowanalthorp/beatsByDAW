@@ -3,11 +3,19 @@ extends Window
 ## Popup window with the piano roll editor and piano instrument.
 ## Play/stop transport and schedules notes on the synth.
 
-var _synth: PianoSynth
+var _stream_player: AudioStreamPlayer
+
 var _playing := false
 var _playhead := 0.0
-var _sounding: Array[bool] = []
-# the song's real project instead of a private one, so the tempo matches the main window
+var _clip: NoteClipData
+
+# render and cache preview pitches instead of synthesizing live
+var _pitch_cache: Dictionary = {}
+var _preview_players: Dictionary = {}
+const PREVIEW_SECONDS := 4.0
+
+# the song's real project instead of a private one, 
+# so the tempo matches the main window
 var _project: ProjectData:
 	get:
 		return Session.project
@@ -17,15 +25,22 @@ var _project: ProjectData:
 @onready var _bpm_spin: SpinBox = $VBox/Toolbar/BpmSpin
 @onready var _clear_button: Button = $VBox/Toolbar/ClearButton
 
+func _mark_clip_dirty() -> void:
+	if _clip != null:
+		_clip.notes_dirty = true
 
 func _ready() -> void:
 	close_requested.connect(_on_close_requested)
 
-	_synth = PianoSynth.new()
-	add_child(_synth)
+	_roll.notes_changed.connect(_mark_clip_dirty)
 
-	_roll.preview_note_on.connect(_synth.note_on)
-	_roll.preview_note_off.connect(_synth.note_off)
+	# Rendered playback
+	_stream_player = AudioStreamPlayer.new()
+	add_child(_stream_player)
+
+
+	_roll.preview_note_on.connect(_preview_note_on)
+	_roll.preview_note_off.connect(_preview_note_off)
 	_play_button.pressed.connect(_toggle_play)
 	_clear_button.pressed.connect(_roll.clear_notes)
 
@@ -37,39 +52,42 @@ func _ready() -> void:
 func _toggle_play() -> void:
 	_playing = not _playing
 	_play_button.text = "Stop" if _playing else "Play"
+	if _playing:
+		var pattern_beats := float(_roll.bars * _roll.beats_per_bar)
+		var seconds_per_beat := 60.0 / _project.bpm
+		var wav := NoteRenderer.render_pattern(_roll.notes, pattern_beats, _project.bpm)
+		
+		if _clip != null and _clip.notes_dirty:
+			DirAccess.make_dir_recursive_absolute("user://renders")
+			var path := "user://renders/%d.wav" % _clip.get_instance_id()
+			if wav.save_to_wav(path) == OK:
+				_clip.wav_path = ProjectSettings.globalize_path(path)
+				_clip.notes_dirty = false
+		
+		# only loop the pattern end not the buffer, 
+		# so release doesn't add a gap to each repetition
+		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		wav.loop_end = roundi(pattern_beats * seconds_per_beat * wav.mix_rate)
+		_stream_player.stream = wav
+		_stream_player.play()
+	else:
+		_stream_player.stop()
 	_playhead = 0.0
-	_roll.show_playhead = _playing # show the red line only while playing
-	_sounding.clear()
-	_synth.all_notes_off()
+	_roll.show_playhead = _playing
 	_roll.queue_redraw()
-
 
 func _on_close_requested() -> void:
 	if _playing:
 		_toggle_play()
+	for player in _preview_players.values():
+		player.stop()
 	hide()
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if not _playing:
 		return
-	var total := float(_roll.bars * _roll.beats_per_bar)
-	_playhead += delta * _project.bpm / 60.0
-	if _playhead >= total:
-		_playhead -= total
-		_synth.all_notes_off()
-		_sounding.clear()
-	if _sounding.size() != _roll.notes.size():
-		_sounding.resize(_roll.notes.size())
-	for i in _roll.notes.size():
-		var n := _roll.notes[i]
-		var on: bool = _playhead >= n.start and _playhead < n.start + n.length
-		if on and not _sounding[i]:
-			_sounding[i] = true
-			_synth.note_on(n.pitch, n.velocity)
-		elif not on and _sounding[i]:
-			_sounding[i] = false
-			_synth.note_off(n.pitch)
+	_playhead = _stream_player.get_playback_position() / (60.0 / _project.bpm)
 	_roll.playhead_beat = _playhead
 	_roll.queue_redraw()
 
@@ -77,6 +95,7 @@ func _process(delta: float) -> void:
 ## opens the window editing this clip's notes. the roll gets the clip's own notes array (same array, not a copy),
 ## so every note placed, moved or deleted is saved straight into the clip
 func open_clip(clip: NoteClipData) -> void:
+	_clip = clip
 	if _playing:
 		_toggle_play()
 	title = "Piano Roll - " + clip.name
@@ -94,3 +113,18 @@ func open_clip(clip: NoteClipData) -> void:
 	# clamped version shrinks it to at most 85% of the main window if it doesnt fit,
 	# so the title bar stays on screen instead of popping out the top
 	popup_centered_clamped(wanted, 0.85)
+
+func _preview_note_on(pitch: int, velocity: float = 1.0) -> void:
+	if not _pitch_cache.has(pitch):
+		_pitch_cache[pitch] = NoteRenderer.render_note(pitch, velocity, PREVIEW_SECONDS)
+	if not _preview_players.has(pitch):
+		var player := AudioStreamPlayer.new()
+		add_child(player)
+		_preview_players[pitch] = player
+	var player: AudioStreamPlayer = _preview_players[pitch]
+	player.stream = _pitch_cache[pitch]
+	player.play()
+
+func _preview_note_off(pitch: int) -> void:
+	if _preview_players.has(pitch):
+		_preview_players[pitch].stop()
