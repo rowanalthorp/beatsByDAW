@@ -52,58 +52,17 @@ static func sample_voice(v: Dictionary, dt: float) -> float:
 
 static func render_note(pitch: int, velocity: float, duration_seconds: float) -> AudioStreamWAV:
 	var sample_rate := 44100
-	var dt := 1.0 / sample_rate
-	var release_seconds := RELEASE * log(1000.0)
-	var held_samples := maxi(1, roundi(duration_seconds * sample_rate))
-	var total_samples := held_samples + ceili(release_seconds * sample_rate)
-	var voice := make_voice(pitch, velocity, dt)
-	var data := PackedByteArray()
-	data.resize(total_samples * 2)
-	for i in total_samples:
-		if i == held_samples:
-			voice.releasing = true
-		var sample_value := tanh(sample_voice(voice, dt))
-		data.encode_s16(i * 2, roundi(sample_value * 32767.0))
+	var data := PianoRenderer.render_note(pitch, velocity, duration_seconds, sample_rate)
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
 	wav.mix_rate = sample_rate
 	wav.stereo = false
 	wav.data = data
 	return wav
-## beats × seconds/beat × samples/second = samples
+
 static func render_pattern(notes: Array[Dictionary], length_beats: float, bpm: float) -> AudioStreamWAV:
 	var sample_rate := 44100
-	var dt := 1.0 / sample_rate
-	var seconds_per_beat := 60.0 / bpm
-	var release_seconds := RELEASE * log(1000.0)
-	var scheduled: Array[Dictionary] = []
-	for note in notes:
-		var start_sample := roundi(float(note.start) * seconds_per_beat * sample_rate)
-		var held_samples := maxi(1, roundi(float(note.length) * seconds_per_beat * sample_rate))
-		scheduled.append({
-			"start_sample": start_sample,
-			"end_sample": start_sample + held_samples,
-			"voice": make_voice(int(note.pitch), float(note.velocity), dt),
-		})
-
-	var pattern_samples := maxi(1, roundi(length_beats * seconds_per_beat * sample_rate))
-	var total_samples := pattern_samples + ceili(release_seconds * sample_rate)
-	var data := PackedByteArray()
-	data.resize(total_samples * 2)
-
-	for i in total_samples:
-		var mixed_sample := 0.0
-		for event in scheduled:
-			if i < event.start_sample:
-				continue
-			var voice: Dictionary = event.voice
-			if voice.dead:
-				continue
-			if i >= event.end_sample:
-				voice.releasing = true
-			mixed_sample += sample_voice(voice, dt)
-		data.encode_s16(i * 2, roundi(tanh(mixed_sample) * 32767.0))
-
+	var data := PianoRenderer.render_pattern(notes, length_beats, bpm, sample_rate)
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
 	wav.mix_rate = sample_rate
