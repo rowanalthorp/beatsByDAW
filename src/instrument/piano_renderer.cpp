@@ -14,6 +14,8 @@ void PianoRenderer::_bind_methods() {
 }
 
 namespace {
+    // sinusoidal additive model, harmonics with per partial exponential decay
+    // as per Smith's "Spectral Audio Signal Processing"
     constexpr int PARTIAL_COUNT =  5;
     // Same table used in GDScript: harminic ratio, amp, decay, factor
     constexpr double PARTIALS[PARTIAL_COUNT][3] = {
