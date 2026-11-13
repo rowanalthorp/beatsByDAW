@@ -21,4 +21,14 @@ func _initialize() -> void:
 	print("Native save: ", native_wav.save_to_wav("user://native_sine.wav"))
 	print(ProjectSettings.globalize_path("user://native_sine.wav"))
 
+	# guitar test sound
+	var guitar_data: PackedByteArray = GuitarRenderer.render_note(60, 1.0, 1.0, 44100)
+	var guitar_wav: AudioStreamWAV = AudioStreamWAV.new()
+	guitar_wav.format = AudioStreamWAV.FORMAT_16_BITS
+	guitar_wav.mix_rate = 44100
+	guitar_wav.stereo = false
+	guitar_wav.data = guitar_data
+	print("Guitar save: ", guitar_wav.save_to_wav("user://guitar_pluck.wav"))
+	print(ProjectSettings.globalize_path("user://guitar_pluck.wav"))
+
 	quit()
