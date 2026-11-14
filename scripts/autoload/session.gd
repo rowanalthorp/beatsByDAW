@@ -116,3 +116,30 @@ func snap(seconds: float) -> float:
 	if not snap_to_beat:
 		return seconds
 	return snappedf(seconds, 60.0 / project.bpm)
+
+
+## cuts the selected clip in two at the playhead. the original becomes the left half, and the right
+## half is a copy trimmed up to the playhead (so whats inside stays put). nothing happens if the
+## playhead isnt inside the clip
+func split_selected() -> void:
+	var clip := selected_clip
+	var at := Transport.position
+	if clip == null or at <= clip.start or at >= clip.end:
+		return
+	var track := _track_of(clip)
+	if track == null:
+		return
+	# true = deep copy. without it both halves share one notes array, and editing one changes both
+	var right_half := clip.duplicate(true) as ClipData
+	right_half.trim_start_to(at)
+	clip.length = at - clip.start
+	track.add_clip(right_half)
+	selected_clip = right_half
+
+
+## the track a clip is on, or null if its not on one (like its track got deleted)
+func _track_of(clip: ClipData) -> TrackData:
+	for track: TrackData in project.tracks:
+		if clip in track.clips:
+			return track
+	return null

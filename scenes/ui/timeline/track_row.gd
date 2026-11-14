@@ -30,6 +30,7 @@ func setup(new_track: TrackData) -> void:
 	for clip: ClipData in track.clips:
 		_add_clip_view(clip)
 	track.clip_removed.connect(_on_clip_removed)
+	track.clip_added.connect(_add_clip_view) # split (and later paste/import) adds clips to this track
 	# make sure the values are changeging succesfully
 	#track.changed.connect(func() -> void: print(track.name, " | mute ", track.muted, " solo ", track.solo, " vol ", track.volume_db, " pan ", track.pan))
 

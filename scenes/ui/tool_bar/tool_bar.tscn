@@ -94,6 +94,7 @@ icon = ExtResource("8_8fwrc")
 expand_icon = true
 
 [node name="Split" type="Button" parent="ToolGroup" unique_id=1085759804]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Split"

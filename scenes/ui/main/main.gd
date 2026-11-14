@@ -7,7 +7,7 @@ const MIN_WINDOW_SIZE := Vector2i(1024, 576)
 # StringName instead of String because actions are converted to StringNames anyways, and this is technically more efficient
 const SHORTCUT_ACTIONS: Array[StringName] = [
 	&"play_pause", &"go_to_start", &"go_to_end",
-	&"delete_selected", &"zoom_in", &"zoom_out", &"zoom_fit",
+	&"delete_selected", &"zoom_in", &"zoom_out", &"zoom_fit", &"split"
 ]
 const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll_window.tscn")
 
@@ -62,6 +62,8 @@ func _on_shortcut(action: StringName) -> void:
 			Session.zoom_to_fit()
 		&"delete_selected":
 			Session.delete_selected()
+		&"split":
+			Session.split_selected()
 		_:
 			print("Shortcut: ", action) # catch everything with no handler
 
