@@ -5,6 +5,7 @@ extends Panel
 var clip: ClipData
 
 const EDGE_GRAB := 6.0 # px in from each edge that grabs the edge (trim) instead of the middle (move)
+const MIN_CLIP_WIDTH := 20.0 # px. trimming stops here, any thinner and the clip is too hard to grab again
 
 enum DragMode { NONE, MOVE, TRIM_LEFT, TRIM_RIGHT }
 
@@ -58,13 +59,14 @@ func _on_mouse_moved(motion: InputEventMouseMotion) -> void:
 		return
 	# song time the dragged thing should be at. motion.position is from the clip's left edge, so add start
 	var target := Session.snap(clip.start + (motion.position.x - _grab_x) / Session.pixels_per_second)
+	var min_length := MIN_CLIP_WIDTH / Session.pixels_per_second # that width in seconds at the current zoom
 	match _drag_mode:
 		DragMode.MOVE:
 			clip.start = target
 		DragMode.TRIM_LEFT:
-			clip.trim_start_to(target)
+			clip.trim_start_to(target, min_length)
 		DragMode.TRIM_RIGHT:
-			clip.length = target - clip.start # (length setter keeps it from going to 0 or negative)
+			clip.length = maxf(target - clip.start, min_length)
 	accept_event()
 
 

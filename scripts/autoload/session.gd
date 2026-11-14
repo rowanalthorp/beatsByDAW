@@ -129,13 +129,11 @@ func split_selected() -> void:
 	var track := _track_of(clip)
 	if track == null:
 		return
-	# true = deep copy. without it both halves share one notes array, and editing one changes both
-	var right_half := clip.duplicate(true) as ClipData
-	right_half.trim_start_to(at)
-	clip.length = at - clip.start
+
+	var right_half := clip.split_at(at)
 	track.add_clip(right_half)
 	selected_clip = right_half
-
+	
 
 ## the track a clip is on, or null if its not on one (like its track got deleted)
 func _track_of(clip: ClipData) -> TrackData:
