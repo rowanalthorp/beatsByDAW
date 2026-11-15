@@ -1,5 +1,6 @@
 extends Node
-## editor state which is shared by the whole ui. for now: the open project
+## editor state shared by the whole ui: the open project, how the timeline is shown (zoom, scroll),
+## what's selected, and the clip edits (split, cut, copy, paste...)
 
 signal project_changed(project: ProjectData)
 ## something about how the timeline is shown changed (ruler mode, zoom or scroll)
@@ -18,12 +19,14 @@ const MAX_ZOOM := 1000.0 # px per second. all the way in, one beat at 120 bpm is
 const ZOOM_STEP := 1.25 # each zoom press multiplies/divides by this
 
 var project: ProjectData = ProjectData.new()
+
 ## zoom: how many pixels wide one second of the project is
 var pixels_per_second: float = 40.0:
 	set(value):
 		# clamp so you cant zoom in or out forever
 		pixels_per_second = clampf(value, MIN_ZOOM, MAX_ZOOM)
 		view_changed.emit()
+
 ## ruler shows minutes:seconds (like audacity) instead of bars (like ableton)
 var show_seconds: bool = false:
 	set(value):
@@ -59,10 +62,26 @@ var snap_to_beat: bool = false
 var _clipboard: ClipData = null # copy of the last cut/copied clip. null until something gets copied
 var _clipboard_track: TrackData = null # where it was copied from, so paste has a track when nothing's selected
 
+
+#region Project
+
 func open_project(new_project: ProjectData) -> void:
 	project = new_project
 	project_changed.emit(project)
 
+
+## adds an empty track at the bottom, named like "Audio 3" or something
+func add_new_track(kind: TrackData.Kind) -> void:
+	var track := TrackData.new()
+	track.kind = kind
+	var label := "Audio" if kind == TrackData.Kind.AUDIO else "Instrument"
+	track.name = "%s %d" % [label, project.tracks.size() + 1]
+	project.add_track(track)
+
+#endregion
+
+
+#region View
 
 ## multiply instead of add so every press feels the same size,
 ## +10 px/s would be huge at 20 px/s but do basically nothing at 800
@@ -83,19 +102,19 @@ func zoom_to_fit() -> void:
 	# 95% of the width so the last clip isnt jammed right against the edge
 	pixels_per_second = lane_width * 0.95 / length
 
+#endregion
 
-## adds an empty track at the bottom, named like "Audio 3" or something
-func add_new_track(kind: TrackData.Kind) -> void:
-	var track := TrackData.new()
-	track.kind = kind
-	var label := "Audio" if kind == TrackData.Kind.AUDIO else "Instrument"
-	track.name = "%s %d" % [label, project.tracks.size() + 1]
-	project.add_track(track)
 
+#region Signal relays
 
 ## godot was giving a warning if I didn't emit the signal this way so
 func request_open_clip(clip: ClipData) -> void:
 	open_clip_requested.emit(clip)
+
+
+## same warning thing as request_open_clip
+func request_effects(track: TrackData) -> void:
+	effects_requested.emit(track)
 
 
 ## clip_view calls this when a drag/trim ends. same warning thing as request_open_clip
@@ -103,10 +122,17 @@ func report_clip_moved(clip: ClipData) -> void:
 	clear_under(clip)
 	song_length_changed.emit()
 
+#endregion
 
-## same warning thing as request_open_clip
-func request_effects(track: TrackData) -> void:
-	effects_requested.emit(track)
+
+#region Clip editing
+
+## rounds a time (seconds) to the nearest beat if snap is on, otherwise gives it back untouched.
+## one beat is 60 / bpm seconds, snappedf rounds to the nearest multiple of that
+func snap(seconds: float) -> float:
+	if not snap_to_beat:
+		return seconds
+	return snappedf(seconds, 60.0 / project.bpm)
 
 
 ## takes the selected clip off whatever track its on
@@ -120,14 +146,6 @@ func delete_selected() -> void:
 	# clear it even if no track had it (its track might have been deleted already)
 	selected_clip = null
 	song_length_changed.emit()
-
-
-## rounds a time (seconds) to the nearest beat if snap is on, otherwise gives it back untouched.
-## one beat is 60 / bpm seconds, snappedf rounds to the nearest multiple of that
-func snap(seconds: float) -> float:
-	if not snap_to_beat:
-		return seconds
-	return snappedf(seconds, 60.0 / project.bpm)
 
 
 ## cuts the selected clip in two at the playhead. the original becomes the left half, and the right
@@ -145,14 +163,6 @@ func split_selected() -> void:
 	var right_half := clip.split_at(at)
 	track.add_clip(right_half)
 	selected_clip = right_half
-	
-
-## the track a clip is on, or null if its not on one (like its track got deleted)
-func _track_of(clip: ClipData) -> TrackData:
-	for track: TrackData in project.tracks:
-		if clip in track.clips:
-			return track
-	return null
 
 
 ## keeps a copy of the selected clip for paste. a copy and not the clip itself, so changing or
@@ -174,7 +184,6 @@ func cut_selected() -> void:
 func paste() -> void:
 	if _clipboard == null:
 		return
-	# the selected track, or the track it was copied from if no track has been picked yet
 	var track: TrackData = selected_track if selected_track else _clipboard_track
 	if track == null or not track in project.tracks:
 		return # the track got deleted since
@@ -226,3 +235,13 @@ func clear_under(clip: ClipData) -> void:
 			other.length = clip.start - other.start # sticks out on the left, cut its end off
 		else:
 			other.trim_start_to(clip.end) # sticks out on the right, cut its start off
+
+#endregion
+
+
+## the track a clip is on, or null if its not on one (like its track got deleted)
+func _track_of(clip: ClipData) -> TrackData:
+	for track: TrackData in project.tracks:
+		if clip in track.clips:
+			return track
+	return null

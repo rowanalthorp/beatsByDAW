@@ -13,12 +13,6 @@ var wav_path := ""
 ## true when notes changed since the last render
 var notes_dirty := true
 
-
-## notes are in beats, so this is how many seconds one beat lasts at the songs tempo
-func _beat_seconds() -> float:
-	return 60.0 / Session.project.bpm
-
-
 ## the piano roll always shows notes from beat 0, so hiding the start with offset (like audio)
 ## doesnt work for notes. instead the notes slide back by however much the edge moved, so they
 ## stay put in the song. ones that end up before the new edge get dropped, ones half over it get cut
@@ -50,3 +44,8 @@ func split_at(at: float) -> ClipData:
 		elif note.start + note.length > split_beat:
 			note.length = split_beat - note.start
 	return right_half
+
+
+## notes are in beats, so this is how many seconds one beat lasts at the songs tempo
+func _beat_seconds() -> float:
+	return 60.0 / Session.project.bpm

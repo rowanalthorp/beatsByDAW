@@ -7,8 +7,8 @@ const MIN_WINDOW_SIZE := Vector2i(1024, 576)
 # StringName instead of String because actions are converted to StringNames anyways, and this is technically more efficient
 const SHORTCUT_ACTIONS: Array[StringName] = [
 	&"play_pause", &"go_to_start", &"go_to_end",
-	&"delete_selected", &"zoom_in", &"zoom_out", 
-	&"zoom_fit", &"split", &"copy", &"cut", &"paste", 
+	&"delete_selected", &"zoom_in", &"zoom_out",
+	&"zoom_fit", &"split", &"copy", &"cut", &"paste",
 	&"duplicate"
 ]
 const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll/piano_roll_window.tscn")
@@ -21,13 +21,13 @@ var _piano_window: PianoRollWindow # made the first time an instrument clip is o
 func _ready() -> void:
 	get_window().min_size = MIN_WINDOW_SIZE
 	_dark_theme = theme # set dark theme to the default start up theme
-	var view_menu: PopupMenu = %View
-	var tracks_menu: PopupMenu = %Tracks
-	tracks_menu.id_pressed.connect(_on_add_track_id_pressed)
-	view_menu.id_pressed.connect(_on_view_menu_id_pressed)
+
 	Session.open_clip_requested.connect(_on_open_clip_requested)
+	%View.id_pressed.connect(_on_view_menu_id_pressed)
+	%Tracks.id_pressed.connect(_on_add_track_id_pressed)
+
 	Session.open_project(DemoProject.create())
-	
+
 
 ## runs whenever any input is pressed
 func _input(event: InputEvent) -> void:

@@ -41,6 +41,6 @@ func stop() -> void:
 
 
 func seek(seconds: float) -> void:
-	# shoulnt receive any negatives, but just to be sure sset a lower bound of zero
+	# shouldnt receive any negatives, but just to be sure set a lower bound of zero
 	position = maxf(seconds, 0.0)
 	position_changed.emit(position)

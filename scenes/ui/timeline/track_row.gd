@@ -8,15 +8,18 @@ var track: TrackData
 
 
 func _ready() -> void:
+	# header controls write straight into the track
 	%NameEdit.text_changed.connect(_on_name_changed)
 	%NameEdit.text_submitted.connect(_on_name_submitted)
 	%MuteButton.toggled.connect(_on_mute_toggled)
 	%SoloButton.toggled.connect(_on_solo_toggled)
 	%VolumeSlider.value_changed.connect(_on_volume_changed)
 	%PanSlider.value_changed.connect(_on_pan_changed)
+	%EffectsButton.pressed.connect(_on_effects_pressed)
 	%DeleteButton.pressed.connect(_on_delete_pressed)
 	%Lane.gui_input.connect(_on_lane_gui_input)
-	%EffectsButton.pressed.connect(_on_effects_pressed)
+
+	# the selected track bar
 	Session.selection_changed.connect(%Header.queue_redraw) # bar on/off
 	%Header.draw.connect(_draw_selected_bar)
 
@@ -33,8 +36,6 @@ func setup(new_track: TrackData) -> void:
 		_add_clip_view(clip)
 	track.clip_removed.connect(_on_clip_removed)
 	track.clip_added.connect(_add_clip_view) # split, paste and duplicate (and later import) add clips to this track
-	# make sure the values are changeging succesfully
-	#track.changed.connect(func() -> void: print(track.name, " | mute ", track.muted, " solo ", track.solo, " vol ", track.volume_db, " pan ", track.pan))
 
 
 func _add_clip_view(clip: ClipData) -> void:
