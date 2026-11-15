@@ -6,7 +6,7 @@ signal project_changed(project: ProjectData)
 signal view_changed
 ## a clip was double-clicked and wants its editor opened (piano roll for instrument clips)
 signal open_clip_requested(clip: ClipData)
-## a different clip got clicked (or nothing is selected anymore)
+## a different clip or track got clicked (or the clip got deselected)
 signal selection_changed
 ## a clip was moved or deleted, so the song might be a different length now
 signal song_length_changed
@@ -43,8 +43,15 @@ var lane_width: float = 0.0
 var selected_clip: ClipData = null:
 	set(value):
 		selected_clip = value
+		if value:
+			selected_track = _track_of(value) # clicking a clip selects its track too
 		selection_changed.emit()
-		
+
+## the track paste goes to. clicking empty lane space or a clip on a track selects it. null = none yet
+var selected_track: TrackData = null:
+	set(value):
+		selected_track = value
+		selection_changed.emit()
 
 ## when on, dragged clips land on the nearest beat. the checkbox in the bottom bar sets this
 var snap_to_beat: bool = false
@@ -91,8 +98,9 @@ func request_open_clip(clip: ClipData) -> void:
 	open_clip_requested.emit(clip)
 
 
-## clip_view calls this when a drag ends. same warning thing as request_open_clip
-func report_clip_moved() -> void:
+## clip_view calls this when a drag/trim ends. same warning thing as request_open_clip
+func report_clip_moved(clip: ClipData) -> void:
+	clear_under(clip)
 	song_length_changed.emit()
 
 
@@ -161,14 +169,13 @@ func cut_selected() -> void:
 	delete_selected()
 
 
-## puts a copy of the clipboard at the playhead, on the selected clip's track
-## (or the track it was copied from if nothing's selected)
+## puts a copy of the clipboard at the playhead, on the selected track
+## (or the track it was copied from if no track has been picked yet)
 func paste() -> void:
 	if _clipboard == null:
 		return
-	var track: TrackData = _clipboard_track
-	if selected_clip:
-		track = _track_of(selected_clip)
+	# the selected track, or the track it was copied from if no track has been picked yet
+	var track: TrackData = selected_track if selected_track else _clipboard_track
 	if track == null or not track in project.tracks:
 		return # the track got deleted since
 	# note clips only go on instrument tracks and audio clips only on audio tracks
@@ -178,6 +185,7 @@ func paste() -> void:
 	var clip := _clipboard.duplicate(true) as ClipData
 	clip.start = Transport.position
 	track.add_clip(clip)
+	clear_under(clip) # the pasted clip wins, anything it lands on gets cut away
 	selected_clip = clip
 	song_length_changed.emit() # pasting past the end makes the song longer
 
@@ -192,5 +200,29 @@ func duplicate_selected() -> void:
 	var copy := selected_clip.duplicate(true) as ClipData
 	copy.start = selected_clip.end
 	track.add_clip(copy)
+	clear_under(copy) # the copy wins, anything it lands on gets cut away
 	selected_clip = copy
 	song_length_changed.emit()
+
+
+## makes "clip" win over any other clip its sitting on top of on the same track: the covered parts of
+## the others get cut away (trimmed, split around it, or deleted if fully covered). two clips stacked
+## on one track would both play at once
+func clear_under(clip: ClipData) -> void:
+	var track := _track_of(clip)
+	if track == null:
+		return
+	# loop over a copy, since this adds/removes clips from the real list as it goes
+	for other: ClipData in track.clips.duplicate():
+		if other == clip or other.end <= clip.start or other.start >= clip.end:
+			continue # itself, or not touching it
+		if other.start >= clip.start and other.end <= clip.end:
+			track.remove_clip(other) # completely covered
+		elif other.start < clip.start and other.end > clip.end:
+			# sticks out both sides: split off the part after, then cut the part before short
+			track.add_clip(other.split_at(clip.end))
+			other.length = clip.start - other.start
+		elif other.start < clip.start:
+			other.length = clip.start - other.start # sticks out on the left, cut its end off
+		else:
+			other.trim_start_to(clip.end) # sticks out on the right, cut its start off

@@ -1,6 +1,6 @@
 extends PanelContainer
-## right side panel for one track's effects. a track's Effects button opens it.
-## only open/close for now, the effect list itself is obj 4 (the slots in it are mockups)
+## right side panel for one track's effects. a track's Effects button opens it. shows one slot per
+## effect on that track. the sound processing itself comes from the audio engine later
 
 const EFFECT_SLOT_SCENE := preload("res://scenes/ui/effect_slot/effect_slot.tscn")
 

@@ -39,7 +39,7 @@ func _gui_input(event: InputEvent) -> void:
 	accept_event()
 	if not click.pressed:
 		if _drag_mode != DragMode.NONE:
-			Session.report_clip_moved() # moving or trimming the last clip changes the song length
+			Session.report_clip_moved(clip) # cut away whatever its now on top of, and the song length may have changed
 		_drag_mode = DragMode.NONE # let go, drag's done
 		return
 	# double_click is godot's own flag for a quick second click, so we dont have to time clicks ourselves

@@ -17,6 +17,8 @@ func _ready() -> void:
 	%DeleteButton.pressed.connect(_on_delete_pressed)
 	%Lane.gui_input.connect(_on_lane_gui_input)
 	%EffectsButton.pressed.connect(_on_effects_pressed)
+	Session.selection_changed.connect(%Header.queue_redraw) # bar on/off
+	%Header.draw.connect(_draw_selected_bar)
 
 
 func setup(new_track: TrackData) -> void:
@@ -30,7 +32,7 @@ func setup(new_track: TrackData) -> void:
 	for clip: ClipData in track.clips:
 		_add_clip_view(clip)
 	track.clip_removed.connect(_on_clip_removed)
-	track.clip_added.connect(_add_clip_view) # split (and later paste/import) adds clips to this track
+	track.clip_added.connect(_add_clip_view) # split, paste and duplicate (and later import) add clips to this track
 	# make sure the values are changeging succesfully
 	#track.changed.connect(func() -> void: print(track.name, " | mute ", track.muted, " solo ", track.solo, " vol ", track.volume_db, " pan ", track.pan))
 
@@ -70,11 +72,15 @@ func _on_delete_pressed() -> void:
 	Session.project.remove_track(track)
 
 
-## clicking empty lane space deselects (clicks on a clip never get here, the clip eats them)
+## clicking empty lane space deselects the clip, selects this track and moves the playhead there
+## (clicks on a clip never get here, the clip eats them)
 func _on_lane_gui_input(event: InputEvent) -> void:
 	var click := event as InputEventMouseButton
 	if click and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
 		Session.selected_clip = null
+		Session.selected_track = track
+		# move the playhead to where you clicked, so paste knows where to go. same math as clicking the ruler
+		Transport.seek(Session.snap(Session.scroll_seconds + click.position.x / Session.pixels_per_second))
 
 
 ## a clip was deleted off this track, so get rid of its block too
@@ -87,3 +93,12 @@ func _on_clip_removed(clip: ClipData) -> void:
 
 func _on_effects_pressed() -> void:
 	Session.request_effects(track)
+
+
+## selected track gets a bar down the left of its header. Header's draw signal fires after it draws
+## its panel, so this lands on top. same blue as the clips since that colour doesnt flip with the theme
+func _draw_selected_bar() -> void:
+	if Session.selected_track != track:
+		return
+	var accent: Color = (get_theme_stylebox(&"panel", &"ClipPanel") as StyleBoxFlat).bg_color
+	%Header.draw_rect(Rect2(0, 0, 4, %Header.size.y), accent)

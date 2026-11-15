@@ -15,8 +15,9 @@ extends Resource
 	set(value):
 		length = maxf(value, 0.01) # set a floor at 0.01
 		emit_changed()
-## how far into the clip's content (audio file / notes) the clip starts, in seconds. trimming the
-## left edge raises this, so the content stays where it was in the song and the beginning just gets hidden
+## how far into the clip's audio the clip starts, in seconds. trimming the left edge raises this, so
+## the audio stays where it was in the song and the beginning just gets hidden. note clips move their
+## actual notes instead (see NoteClipData), so for them this stays 0
 @export var offset: float = 0.0:
 	set(value):
 		offset = maxf(value, 0.0)
