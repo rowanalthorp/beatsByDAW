@@ -9,7 +9,7 @@ const SHORTCUT_ACTIONS: Array[StringName] = [
 	&"play_pause", &"go_to_start", &"go_to_end",
 	&"delete_selected", &"zoom_in", &"zoom_out", &"zoom_fit",
 ]
-const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll_window.tscn")
+const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll/piano_roll_window.tscn")
 
 var _dark_theme: Theme
 var _light_theme: Theme # built the first time it's turned on

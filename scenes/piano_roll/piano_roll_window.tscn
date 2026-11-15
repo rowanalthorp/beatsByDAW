@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://bkwpg5pm6ott4"]
+
+[ext_resource type="Script" uid="uid://cpxjvi6tfst81" path="res://scripts/piano_roll/piano_roll_window.gd" id="1_win"]
+[ext_resource type="Script" uid="uid://dh7fv8rt5jtys" path="res://scripts/piano_roll/piano_roll.gd" id="2_roll"]
+
+[node name="PianoRollWindow" type="Window" unique_id=1359880758]
+title = "Piano Roll — Piano"
+position = Vector2i(80, 50)
+size = Vector2i(1150, 660)
+visible = false
+transient = true
+script = ExtResource("1_win")
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1485364517]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Toolbar" type="HBoxContainer" parent="VBox" unique_id=834814798]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PlayButton" type="Button" parent="VBox/Toolbar" unique_id=2055724156]
+layout_mode = 2
+text = "Play"
+
+[node name="BpmLabel" type="Label" parent="VBox/Toolbar" unique_id=568167031]
+layout_mode = 2
+text = "BPM:"
+
+[node name="BpmSpin" type="SpinBox" parent="VBox/Toolbar" unique_id=2126318601]
+layout_mode = 2
+min_value = 20.0
+max_value = 300.0
+value = 120.0
+
+[node name="ClearButton" type="Button" parent="VBox/Toolbar" unique_id=923024404]
+layout_mode = 2
+text = "Clear"
+
+[node name="Spacer" type="Control" parent="VBox/Toolbar" unique_id=1784522482]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HintLabel" type="Label" parent="VBox/Toolbar" unique_id=648973615]
+layout_mode = 2
+text = "LMB: place/drag | drag right edge: resize | RMB: delete | keys: preview"
+
+[node name="Scroll" type="ScrollContainer" parent="VBox" unique_id=452476487]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PianoRoll" type="Control" parent="VBox/Scroll" unique_id=268605515]
+layout_mode = 2
+script = ExtResource("2_roll")

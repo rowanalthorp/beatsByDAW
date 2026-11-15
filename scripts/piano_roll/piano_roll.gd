@@ -6,6 +6,7 @@ extends Control
 
 signal preview_note_on(pitch: int)
 signal preview_note_off(pitch: int)
+signal notes_changed
 
 const KEY_WIDTH := 56.0
 const ROW_HEIGHT := 14.0
@@ -49,6 +50,7 @@ func _refresh_size() -> void:
 
 func clear_notes() -> void:
 	notes.clear()
+	notes_changed.emit()
 	queue_redraw()
 
 
@@ -65,6 +67,7 @@ func _gui_input(event: InputEvent) -> void:
 			var idx := _note_at(pos)
 			if idx == -1:
 				idx = _add_note(_beat_at(pos.x), _pitch_at(pos.y))
+				notes_changed.emit()
 				_move_note = idx
 				_grab_beat_offset = _beat_at(pos.x) - notes[idx].start
 				_grab_pitch_offset = 0
@@ -81,6 +84,7 @@ func _gui_input(event: InputEvent) -> void:
 			var idx := _note_at(mb.position)
 			if idx != -1:
 				notes.remove_at(idx)
+				notes_changed.emit()
 				queue_redraw()
 	elif event is InputEventMouseMotion:
 		# Cursor hints, resize on the right edge and move on the body
@@ -101,6 +105,8 @@ func _input(event: InputEvent) -> void:
 		if _preview_pitch != -1:
 			preview_note_off.emit(_preview_pitch)
 			_preview_pitch = -1
+		if _resize_note != -1 or _move_note != -1:
+			notes_changed.emit()
 		_resize_note = -1
 		_move_note = -1
 		return
