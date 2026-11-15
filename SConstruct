@@ -23,6 +23,7 @@ sources = [
     "src/audio_engine/audio_decoder.cpp",
     "src/audio_engine/mixer_core.cpp",
     "src/audio_engine/track_channel.cpp",
+    "src/instrument/piano_renderer.cpp",
 ]
 
 # Build the shared library depending on the target platform

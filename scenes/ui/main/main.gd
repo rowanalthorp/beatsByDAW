@@ -11,7 +11,7 @@ const SHORTCUT_ACTIONS: Array[StringName] = [
 	&"zoom_fit", &"split", &"copy", &"cut", &"paste", 
 	&"duplicate"
 ]
-const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll_window.tscn")
+const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll/piano_roll_window.tscn")
 
 var _dark_theme: Theme
 var _light_theme: Theme # built the first time it's turned on

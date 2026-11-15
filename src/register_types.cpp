@@ -7,16 +7,20 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "instrument/piano_renderer.h"
+
 using namespace godot;
 
 void initialize_daw_module(ModuleInitializationLevel p_level) {
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
+    
 
     UtilityFunctions::print("--- C++ GDExtension INITIALIZED SUCCESSFULLY ---");
     GDREGISTER_RUNTIME_CLASS(TestCPP);
     GDREGISTER_RUNTIME_CLASS(AudioEngine);
+    GDREGISTER_RUNTIME_CLASS(PianoRenderer);
 }
 
 void uninitialize_daw_module(ModuleInitializationLevel p_level) {
