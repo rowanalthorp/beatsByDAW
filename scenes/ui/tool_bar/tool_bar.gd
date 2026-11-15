@@ -19,6 +19,9 @@ func _ready() -> void:
 	%ZoomOut.pressed.connect(Session.zoom_out)
 	%ZoomFit.pressed.connect(Session.zoom_to_fit)
 	%Split.pressed.connect(Session.split_selected)
+	%Cut.pressed.connect(Session.cut_selected)
+	%Copy.pressed.connect(Session.copy_selected)
+	%Paste.pressed.connect(Session.paste)
 
 
 ## item ids match TrackData.Kind: 0 = audio, 1 = instrument

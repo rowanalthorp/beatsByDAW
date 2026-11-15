@@ -44,9 +44,13 @@ var selected_clip: ClipData = null:
 	set(value):
 		selected_clip = value
 		selection_changed.emit()
+		
 
 ## when on, dragged clips land on the nearest beat. the checkbox in the bottom bar sets this
 var snap_to_beat: bool = false
+
+var _clipboard: ClipData = null # copy of the last cut/copied clip. null until something gets copied
+var _clipboard_track: TrackData = null # where it was copied from, so paste has a track when nothing's selected
 
 func open_project(new_project: ProjectData) -> void:
 	project = new_project
@@ -141,3 +145,52 @@ func _track_of(clip: ClipData) -> TrackData:
 		if clip in track.clips:
 			return track
 	return null
+
+
+## keeps a copy of the selected clip for paste. a copy and not the clip itself, so changing or
+## deleting the original afterwards doesnt change what gets pasted
+func copy_selected() -> void:
+	if selected_clip == null:
+		return
+	_clipboard = selected_clip.duplicate(true)
+	_clipboard_track = _track_of(selected_clip)
+
+
+func cut_selected() -> void:
+	copy_selected()
+	delete_selected()
+
+
+## puts a copy of the clipboard at the playhead, on the selected clip's track
+## (or the track it was copied from if nothing's selected)
+func paste() -> void:
+	if _clipboard == null:
+		return
+	var track: TrackData = _clipboard_track
+	if selected_clip:
+		track = _track_of(selected_clip)
+	if track == null or not track in project.tracks:
+		return # the track got deleted since
+	# note clips only go on instrument tracks and audio clips only on audio tracks
+	if (_clipboard is NoteClipData) != (track.kind == TrackData.Kind.INSTRUMENT):
+		return
+	# copy again so pasting twice gives two separate clips, not the same one twice
+	var clip := _clipboard.duplicate(true) as ClipData
+	clip.start = Transport.position
+	track.add_clip(clip)
+	selected_clip = clip
+	song_length_changed.emit() # pasting past the end makes the song longer
+
+
+## a copy of the selected clip placed right after it, on the same track
+func duplicate_selected() -> void:
+	if selected_clip == null:
+		return
+	var track := _track_of(selected_clip)
+	if track == null:
+		return
+	var copy := selected_clip.duplicate(true) as ClipData
+	copy.start = selected_clip.end
+	track.add_clip(copy)
+	selected_clip = copy
+	song_length_changed.emit()
