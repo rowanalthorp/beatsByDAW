@@ -31,6 +31,7 @@ suffix = "BPM"
 layout_mode = 2
 
 [node name="SnapCheck" type="CheckButton" parent="Hbox/SettingsGroup" unique_id=56670295]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 text = "Snap to beat

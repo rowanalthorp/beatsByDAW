@@ -4,6 +4,7 @@ extends Resource
 
 signal clip_added(clip: ClipData)
 signal clip_removed(clip: ClipData)
+signal effects_changed # an effect was added or removed
 
 enum Kind { AUDIO, INSTRUMENT }
 
@@ -29,6 +30,7 @@ enum Kind { AUDIO, INSTRUMENT }
 		solo = value
 		emit_changed()
 @export var clips: Array[ClipData] = []
+@export var effects: Array[EffectData] = []
 
 
 func add_clip(clip: ClipData) -> void:
@@ -39,3 +41,13 @@ func add_clip(clip: ClipData) -> void:
 func remove_clip(clip: ClipData) -> void:
 	clips.erase(clip)
 	clip_removed.emit(clip)
+
+
+func add_effect(effect: EffectData) -> void:
+	effects.append(effect)
+	effects_changed.emit()
+
+
+func remove_effect(effect: EffectData) -> void:
+	effects.erase(effect)
+	effects_changed.emit()

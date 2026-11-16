@@ -94,6 +94,7 @@ icon = ExtResource("8_8fwrc")
 expand_icon = true
 
 [node name="Split" type="Button" parent="ToolGroup" unique_id=1085759804]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Split"
@@ -109,6 +110,7 @@ layout_mode = 2
 columns = 3
 
 [node name="Cut" type="Button" parent="EditGroup" unique_id=2038688666]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Cut"
@@ -117,6 +119,7 @@ icon_alignment = 1
 expand_icon = true
 
 [node name="Copy" type="Button" parent="EditGroup" unique_id=946709897]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Copy"
@@ -125,6 +128,7 @@ icon_alignment = 1
 expand_icon = true
 
 [node name="Paste" type="Button" parent="EditGroup" unique_id=454577106]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Paste"
