@@ -1,5 +1,6 @@
 extends Control
 
+enum FileMenuId { NEW, OPEN, SAVE, IMPORT_AUDIO, EXPORT }
 # enum since we will prob get more entries with zooming in, out, and expanding
 enum ViewMenuId { LIGHT_THEME, RULER_SECONDS }
 
@@ -16,6 +17,7 @@ const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll/piano_roll_window.ts
 var _dark_theme: Theme
 var _light_theme: Theme # built the first time it's turned on
 var _piano_window: PianoRollWindow # made the first time an instrument clip is opened, then reused
+var _import_dialog: FileDialog # made the first time Import Audio is pressed, then reused
 
 
 func _ready() -> void:
@@ -23,6 +25,8 @@ func _ready() -> void:
 	_dark_theme = theme # set dark theme to the default start up theme
 
 	Session.open_clip_requested.connect(_on_open_clip_requested)
+	Session.import_requested.connect(_on_import_requested)
+	%File.id_pressed.connect(_on_file_menu_id_pressed)
 	%View.id_pressed.connect(_on_view_menu_id_pressed)
 	%Tracks.id_pressed.connect(_on_add_track_id_pressed)
 
@@ -78,6 +82,13 @@ func _on_shortcut(action: StringName) -> void:
 			print("Shortcut: ", action) # catch everything with no handler
 
 
+## only Import Audio does something so far, the rest come with save/load and export
+func _on_file_menu_id_pressed(id: int) -> void:
+	match id:
+		FileMenuId.IMPORT_AUDIO:
+			Session.request_import()
+
+
 func _on_view_menu_id_pressed(id: int) -> void:
 	var view_menu: PopupMenu = %View
 	var index := view_menu.get_item_index(id)
@@ -117,3 +128,16 @@ func _on_open_clip_requested(clip: ClipData) -> void:
 		_piano_window.force_native = true
 		add_child(_piano_window)
 	_piano_window.open_clip(note_clip)
+
+
+## opens the file picker. picking a file hands its path to Session.import_audio
+func _on_import_requested() -> void:
+	if _import_dialog == null:
+		_import_dialog = FileDialog.new()
+		_import_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+		_import_dialog.access = FileDialog.ACCESS_FILESYSTEM # anywhere on the computer, not just inside the project
+		_import_dialog.filters = PackedStringArray(["*.wav, *.ogg, *.mp3 ; Audio Files"])
+		_import_dialog.use_native_dialog = true # windows' own file picker, so it looks like every other app's
+		_import_dialog.file_selected.connect(Session.import_audio)
+		add_child(_import_dialog)
+	_import_dialog.popup_file_dialog()

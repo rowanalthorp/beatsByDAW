@@ -13,6 +13,8 @@ signal selection_changed
 signal song_length_changed
 ## a track's Effects button was pressed and wants the sidebar opened for it
 signal effects_requested(track: TrackData)
+## the Import Audio button or menu item was pressed and wants the file picker opened
+signal import_requested
 
 const MIN_ZOOM := 2.0 # px per second. all the way out, a 5 min song is ~600px wide
 const MAX_ZOOM := 1000.0 # px per second. all the way in, one beat at 120 bpm is 500px
@@ -115,6 +117,11 @@ func request_open_clip(clip: ClipData) -> void:
 ## same warning thing as request_open_clip
 func request_effects(track: TrackData) -> void:
 	effects_requested.emit(track)
+
+
+## same warning thing as request_open_clip
+func request_import() -> void:
+	import_requested.emit()
 
 
 ## clip_view calls this when a drag/trim ends. same warning thing as request_open_clip
@@ -235,6 +242,24 @@ func clear_under(clip: ClipData) -> void:
 			other.length = clip.start - other.start # sticks out on the left, cut its end off
 		else:
 			other.trim_start_to(clip.end) # sticks out on the right, cut its start off
+
+
+## puts an audio file on the timeline as a new clip at the playhead. it goes on the selected track if
+## that's an audio track, otherwise it gets a new audio track of its own
+func import_audio(path: String) -> void:
+	var clip := AudioClipData.from_file(path)
+	if clip == null:
+		return # not a file godot can read, from_file already printed why
+	var track := selected_track
+	# the selected track might have been deleted since, same check as paste
+	if track == null or track.kind != TrackData.Kind.AUDIO or not track in project.tracks:
+		add_new_track(TrackData.Kind.AUDIO)
+		track = project.tracks[-1] # add_new_track always adds at the bottom
+	clip.start = Transport.position
+	track.add_clip(clip)
+	clear_under(clip) # the imported clip wins, same as paste
+	selected_clip = clip
+	song_length_changed.emit() # a long file can make the song longer
 
 #endregion
 

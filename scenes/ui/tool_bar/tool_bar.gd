@@ -22,6 +22,7 @@ func _ready() -> void:
 	%ZoomOut.pressed.connect(Session.zoom_out)
 	%ZoomFit.pressed.connect(Session.zoom_to_fit)
 
+	%ImportAudio.pressed.connect(Session.request_import)
 	%AddTrack.get_popup().id_pressed.connect(_on_add_track_id_pressed)
 
 
