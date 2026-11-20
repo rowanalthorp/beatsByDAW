@@ -13,6 +13,9 @@ var wav_path := ""
 ## true when notes changed since the last render
 var notes_dirty := true
 
+var _stream: AudioStreamWAV # the last render, reused until something it was made from changes
+var _rendered_from: Array = [] # copy of [notes, length, bpm] at the last render, to tell if it's out of date
+
 ## the piano roll always shows notes from beat 0, so hiding the start with offset (like audio)
 ## doesnt work for notes. instead the notes slide back by however much the edge moved, so they
 ## stay put in the song. ones that end up before the new edge get dropped, ones half over it get cut
@@ -28,6 +31,7 @@ func trim_start_to(new_start: float, min_length: float = 0.01) -> void:
 		elif note.start < 0.0:
 			note.length += note.start # sticks out past the edge, cut off the part before it
 			note.start = 0.0
+	notes_dirty = true
 	length = end - new_start
 	start = new_start
 
@@ -45,6 +49,26 @@ func split_at(at: float) -> ClipData:
 			note.length = split_beat - note.start
 	return right_half
 
+
+## the notes rendered to sound with kris's piano. renders again only when the notes, the clip's length
+## or the tempo changed since last time. the piano roll edits notes straight in the array without telling
+## the clip, so comparing against a copy of what the last render was made from catches every kind of edit
+func get_stream() -> AudioStream:
+	var made_from := [notes.duplicate(true), length, Session.project.bpm]
+	if _stream == null or made_from != _rendered_from:
+		_stream = NoteRenderer.render_pattern(notes, length / _beat_seconds(), Session.project.bpm)
+		_rendered_from = made_from
+		_save_render()
+	return _stream
+
+
+## same file and folder the piano roll window saves to, so the engine finds the newest render in wav_path
+func _save_render() -> void:
+	DirAccess.make_dir_recursive_absolute("user://renders")
+	var path := "user://renders/%d.wav" % get_instance_id()
+	if _stream.save_to_wav(path) == OK:
+		wav_path = ProjectSettings.globalize_path(path)
+		notes_dirty = false
 
 ## notes are in beats, so this is how many seconds one beat lasts at the songs tempo
 func _beat_seconds() -> float:

@@ -47,3 +47,9 @@ func split_at(at: float) -> ClipData:
 	right_half.trim_start_to(at)
 	length = at - start
 	return right_half
+
+
+## the sound this clip plays, from its start (offset picks where in it playback begins).
+## plain clips like the demo ones have nothing behind them, so null. audio and note clips override this
+func get_stream() -> AudioStream:
+	return null
