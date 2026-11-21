@@ -30,3 +30,8 @@ ma_uint64 AudioDecoder::read_frames(void *p_buffer, ma_uint64 frame_count) {
     ma_decoder_read_pcm_frames(&decoder, p_buffer, frame_count, &frames_read);
     return frames_read;
 }
+
+bool AudioDecoder::seek_to_frame(ma_uint64 frame_index) {
+    if (!loaded) return false;
+    return ma_decoder_seek_to_pcm_frame(&decoder, frame_index) == MA_SUCCESS;
+}

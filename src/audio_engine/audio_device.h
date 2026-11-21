@@ -17,6 +17,8 @@ public:
     ma_result stop();
     ma_result pause();
     ma_result resume();
+    bool seek_to_frame(ma_uint64 frame);
+    ma_uint64 get_playback_position_frames() const { return mixer.get_timeline_frame(); }
     bool is_finished() const { return finished.load(); }
 
 private:

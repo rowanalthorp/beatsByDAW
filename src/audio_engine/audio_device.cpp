@@ -81,6 +81,13 @@ ma_result AudioDevice::resume() {
     return result;
 }
 
+bool AudioDevice::seek_to_frame(ma_uint64 frame) {
+    if (initialized && !paused) return false;
+    if (!mixer.seek_to_timeline_frame(frame)) return false;
+    finished.store(false);
+    return true;
+}
+
 void AudioDevice::data_callback(
     ma_device *device,
     void *output,
@@ -96,6 +103,11 @@ void AudioDevice::data_callback(
     float *cast_output_float = static_cast<float *>(output);
 
     if (audio_device == nullptr) {
+        std::memset(output, 0, sample_count * sizeof(float));
+        return;
+    }
+
+    if (audio_device->finished.load()) {
         std::memset(output, 0, sample_count * sizeof(float));
         return;
     }

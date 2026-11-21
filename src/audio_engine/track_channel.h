@@ -11,6 +11,7 @@ class TrackChannel {
         int get_id() const { return id; }
         ma_uint64 get_timeline_start_frame() const { return clip->get_timeline_start_frame(); }
         ma_uint64 read_frames(void *buffer, ma_uint64 frame_count);
+        bool seek_to_timeline_frame(ma_uint64 timeline_frame);
         bool is_loaded() const;
         bool is_finished() const { return finished; }
         float get_volume() const { return volume; }

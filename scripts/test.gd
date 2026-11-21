@@ -35,6 +35,16 @@ func test_audio_engine():
 		audio_engine.stop_audio()
 		audio_engine.queue_free()
 		return
+	if not audio_engine.seek_audio(0.01):
+		push_error("Could not seek to the requested start time")
+		audio_engine.stop_audio()
+		audio_engine.queue_free()
+		return
+	if abs(audio_engine.get_playback_time_seconds() - 0.01) > 1.0 / 48000.0:
+		push_error("Playback position did not update after seeking Craps")
+		audio_engine.stop_audio()
+		audio_engine.queue_free()
+		return
 	var result = audio_engine.start_audio_sources()
 	if result != 0:
 		print("CRAP AUDIO FAILED!!!")

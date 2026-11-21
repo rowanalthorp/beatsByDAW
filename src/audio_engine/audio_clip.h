@@ -9,6 +9,7 @@ class AudioClip {
         ~AudioClip();
         ma_uint64 get_timeline_start_frame() const { return timeline_start_frame; }
         ma_uint64 read_frames(void *buffer, ma_uint64 frame_count);
+        bool seek_to_frame(ma_uint64 frame_index);
         bool is_loaded() const;
 
     private:

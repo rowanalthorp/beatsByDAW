@@ -11,4 +11,6 @@ ma_uint64 AudioClip::read_frames(void *buffer, ma_uint64 frame_count) {
     return decoder->read_frames(buffer, frame_count);
 }
 
+bool AudioClip::seek_to_frame(ma_uint64 frame_index) { return is_loaded() && decoder->seek_to_frame(frame_index); }
+
 bool AudioClip::is_loaded() const {return decoder != nullptr && decoder->is_loaded(); }

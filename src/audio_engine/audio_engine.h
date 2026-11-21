@@ -26,6 +26,8 @@ namespace godot {
             int pause_audio();
             int resume_audio();
             bool is_audio_finished() const;
+            bool seek_audio(double timeline_seconds);
+            double get_playback_time_seconds() const;
 
             int add_audio_source(const String &fp);
             int add_audio_clip(const String &fp, double timeline_start_seconds);

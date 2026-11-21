@@ -11,6 +11,8 @@ void AudioEngine::_bind_methods() {
     ClassDB::bind_method(D_METHOD("is_audio_finished"), &AudioEngine::is_audio_finished);
     ClassDB::bind_method(D_METHOD("pause_audio"), &AudioEngine::pause_audio);
     ClassDB::bind_method(D_METHOD("resume_audio"), &AudioEngine::resume_audio);
+    ClassDB::bind_method(D_METHOD("seek_audio", "timeline_seconds"), &AudioEngine::seek_audio);
+    ClassDB::bind_method(D_METHOD("get_playback_time_seconds"), &AudioEngine::get_playback_time_seconds);
     ClassDB::bind_method(D_METHOD("add_audio_source", "path"), &AudioEngine::add_audio_source);
     ClassDB::bind_method(D_METHOD("add_audio_clip", "path", "timeline_start_seconds"), &AudioEngine::add_audio_clip);
     ClassDB::bind_method(D_METHOD("set_track_volume", "track_id", "volume"), &AudioEngine::set_track_volume);
@@ -51,6 +53,19 @@ int AudioEngine::resume_audio() {
 
 bool AudioEngine::is_audio_finished() const {
     return audio_device.is_finished();
+}
+
+bool AudioEngine::seek_audio(double timeline_seconds) {
+    if (tracks.empty() || !std::isfinite(timeline_seconds) || timeline_seconds < 0.0) return false;
+
+    const long double frame = std::round(static_cast<long double>(timeline_seconds) * 48000.0);
+    if (frame >= static_cast<long double>(std::numeric_limits<ma_uint64>::max())) return false;
+
+    return audio_device.seek_to_frame(static_cast<ma_uint64>(frame));
+}
+
+double AudioEngine::get_playback_time_seconds() const {
+    return static_cast<double>(audio_device.get_playback_position_frames()) / 48000.0; // NOTE: This is multi by sample rate which later make dynamic
 }
 
 int AudioEngine::add_audio_source(const String &path) { return add_audio_clip(path, 0.0); }
