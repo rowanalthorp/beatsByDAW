@@ -6,6 +6,8 @@ extends ClipData
 
 @export var notes: Array[Dictionary] = []
 
+@export var instrument: String = "piano"
+
 ## absolute path of rendered wav for the engine, empty until rendered
 ## the engine plays it via add_audio_clip(wav_path, clip.start)
 var wav_path := ""

@@ -24,6 +24,7 @@ var _project: ProjectData:
 @onready var _play_button: Button = $VBox/Toolbar/PlayButton
 @onready var _bpm_spin: SpinBox = $VBox/Toolbar/BpmSpin
 @onready var _clear_button: Button = $VBox/Toolbar/ClearButton
+@onready var _instrument_picker: OptionButton = $VBox/Toolbar/InstrumentPicker
 
 func _mark_clip_dirty() -> void:
 	if _clip != null:
@@ -33,6 +34,10 @@ func _ready() -> void:
 	close_requested.connect(_on_close_requested)
 
 	_roll.notes_changed.connect(_mark_clip_dirty)
+
+	_instrument_picker.add_item("Piano")
+	_instrument_picker.add_item("Guitar")
+	_instrument_picker.item_selected.connect(_on_instrument_selected)
 
 	# Rendered playback
 	_stream_player = AudioStreamPlayer.new()
@@ -55,7 +60,8 @@ func _toggle_play() -> void:
 	if _playing:
 		var pattern_beats := float(_roll.bars * _roll.beats_per_bar)
 		var seconds_per_beat := 60.0 / _project.bpm
-		var wav := NoteRenderer.render_pattern(_roll.notes, pattern_beats, _project.bpm)
+		var instrument := _clip.instrument if _clip != null else "piano"
+		var wav := NoteRenderer.render_pattern(_roll.notes, pattern_beats, _project.bpm, instrument)
 		
 		if _clip != null and _clip.notes_dirty:
 			DirAccess.make_dir_recursive_absolute("user://renders")
@@ -96,6 +102,7 @@ func _process(_delta: float) -> void:
 ## so every note placed, moved or deleted is saved straight into the clip
 func open_clip(clip: NoteClipData) -> void:
 	_clip = clip
+	_instrument_picker.select(1 if clip.instrument == "guitar" else 0)
 	if _playing:
 		_toggle_play()
 	title = "Piano Roll - " + clip.name
@@ -115,16 +122,29 @@ func open_clip(clip: NoteClipData) -> void:
 	popup_centered_clamped(wanted, 0.85)
 
 func _preview_note_on(pitch: int, velocity: float = 1.0) -> void:
-	if not _pitch_cache.has(pitch):
-		_pitch_cache[pitch] = NoteRenderer.render_note(pitch, velocity, PREVIEW_SECONDS)
+	var instrument: String = _clip.instrument if _clip != null else "piano"
+	var cache_key := "%s:%d" % [instrument, pitch]
+	if not _pitch_cache.has(cache_key):
+		_pitch_cache[cache_key] = NoteRenderer.render_note(pitch, 1.0, PREVIEW_SECONDS, instrument)
 	if not _preview_players.has(pitch):
 		var player := AudioStreamPlayer.new()
 		add_child(player)
 		_preview_players[pitch] = player
 	var player: AudioStreamPlayer = _preview_players[pitch]
-	player.stream = _pitch_cache[pitch]
+	player.stream = _pitch_cache[cache_key]
+	player.volume_db = linear_to_db(clampf(velocity, 0.0001, 1.0))
 	player.play()
 
 func _preview_note_off(pitch: int) -> void:
 	if _preview_players.has(pitch):
 		_preview_players[pitch].stop()
+
+func _on_instrument_selected(index: int) -> void:
+	if _clip == null:
+		return
+	if _playing:
+		_toggle_play()
+	for player in _preview_players.values():
+		player.stop()
+	_clip.instrument = "guitar" if index == 1 else "piano"
+	_mark_clip_dirty()
