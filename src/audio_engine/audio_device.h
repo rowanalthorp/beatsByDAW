@@ -7,6 +7,9 @@
 // NOTE: ma_resutl is miniaudios restult/status type
 class AudioDevice {
 public:
+    static constexpr ma_uint32 sample_rate = 48000;
+    static constexpr ma_uint32 output_channels = 2;
+
     AudioDevice();
     ~AudioDevice();
 

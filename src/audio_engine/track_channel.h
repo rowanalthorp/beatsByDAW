@@ -2,24 +2,31 @@
 
 #include "audio_clip.h"
 #include <memory>
+#include <vector>
 
 class TrackChannel {
     public:
-        TrackChannel(int track_id, std::unique_ptr<AudioClip> clip);
+        explicit TrackChannel(int track_id);
         ~TrackChannel();
 
         int get_id() const { return id; }
-        ma_uint64 get_timeline_start_frame() const { return clip->get_timeline_start_frame(); }
-        ma_uint64 read_frames(void *buffer, ma_uint64 frame_count);
+        void add_clip(std::unique_ptr<AudioClip> clip);
+        bool has_clips() const { return !clips.empty(); }
+        void mix_frames(
+            float *output,
+            float *clip_buffer,
+            ma_uint64 timeline_start_frame,
+            ma_uint32 frame_count,
+            ma_uint32 channels
+        );
         bool seek_to_timeline_frame(ma_uint64 timeline_frame);
         bool is_loaded() const;
-        bool is_finished() const { return finished; }
+        bool is_finished() const;
         float get_volume() const { return volume; }
         void set_volume(float value);
 
     private:
         int id;
-        std::unique_ptr<AudioClip> clip;
+        std::vector<std::unique_ptr<AudioClip>> clips;
         float volume = 1.0;
-        bool finished = false;
 };

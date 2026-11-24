@@ -22,4 +22,5 @@ class MixerCore {
         std::atomic<ma_uint64> timeline_frame_cursor{ 0 };
         std::vector<TrackChannel *> tracks;
         std::vector<float> track_buffer;
+        std::vector<float> clip_buffer;
 };

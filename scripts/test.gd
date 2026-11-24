@@ -24,8 +24,7 @@ func test_audio_engine():
 		print("COULD not load the first audio file")
 		audio_engine.queue_free()
 		return
-	var second_source_id = audio_engine.add_audio_clip(file_path, .025)
-	if second_source_id < 0:
+	if not audio_engine.add_audio_clip(file_path, .025):
 		print("COULD not LOad the secodn audio file")
 		audio_engine.stop_audio()
 		audio_engine.queue_free()
