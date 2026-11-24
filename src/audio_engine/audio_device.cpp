@@ -23,8 +23,8 @@ ma_result AudioDevice::start() {
     ma_device_config config =
         ma_device_config_init(ma_device_type_playback);
     config.playback.format = ma_format_f32;
-    config.playback.channels = 2; // NOTE: Make this dynamic later
-    config.sampleRate = 48000; // NOTE: Make this dynamic later
+    config.playback.channels = output_channels; // NOTE: Make this dynamic later
+    config.sampleRate = sample_rate; // NOTE: Make this dynamic later
     config.dataCallback = data_callback;
     config.pUserData = this; // this is so that static callback has access to AudioDevice instance
     
@@ -81,6 +81,13 @@ ma_result AudioDevice::resume() {
     return result;
 }
 
+bool AudioDevice::seek_to_frame(ma_uint64 frame) {
+    if (initialized && !paused) return false;
+    if (!mixer.seek_to_timeline_frame(frame)) return false;
+    finished.store(false);
+    return true;
+}
+
 void AudioDevice::data_callback(
     ma_device *device,
     void *output,
@@ -96,6 +103,11 @@ void AudioDevice::data_callback(
     float *cast_output_float = static_cast<float *>(output);
 
     if (audio_device == nullptr) {
+        std::memset(output, 0, sample_count * sizeof(float));
+        return;
+    }
+
+    if (audio_device->finished.load()) {
         std::memset(output, 0, sample_count * sizeof(float));
         return;
     }
