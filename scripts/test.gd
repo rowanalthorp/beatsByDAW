@@ -24,14 +24,23 @@ func test_audio_engine():
 		print("COULD not load the first audio file")
 		audio_engine.queue_free()
 		return
-	var second_source_id = audio_engine.add_audio_clip(file_path, .025)
-	if second_source_id < 0:
+	if not audio_engine.add_audio_clip(file_path, .025):
 		print("COULD not LOad the secodn audio file")
 		audio_engine.stop_audio()
 		audio_engine.queue_free()
 		return
 	if not audio_engine.set_track_volume(first_source_id, 0.25):
 		push_error("Could not set volume for the first track")
+		audio_engine.stop_audio()
+		audio_engine.queue_free()
+		return
+	if not audio_engine.seek_audio(0.01):
+		push_error("Could not seek to the requested start time")
+		audio_engine.stop_audio()
+		audio_engine.queue_free()
+		return
+	if abs(audio_engine.get_playback_time_seconds() - 0.01) > 1.0 / 48000.0:
+		push_error("Playback position did not update after seeking Craps")
 		audio_engine.stop_audio()
 		audio_engine.queue_free()
 		return

@@ -16,6 +16,7 @@ class AudioDecoder {
         void close();
 
         ma_uint64 read_frames(void *p_buffer, ma_uint64 frame_count);
+        bool seek_to_frame(ma_uint64 frame_index);
 
         bool is_loaded() const { return loaded; }
     private:
