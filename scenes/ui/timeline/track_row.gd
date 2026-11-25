@@ -35,7 +35,7 @@ func setup(new_track: TrackData) -> void:
 	track.clip_added.connect(_add_clip_view) # split, paste and duplicate (and later import) add clips to this track
 	# make sure the values are changeging succesfully
 	#track.changed.connect(func() -> void: print(track.name, " | mute ", track.muted, " solo ", track.solo, " vol ", track.volume_db, " pan ", track.pan))
-
+	%RecordButton.visible = track.kind == TrackData.Kind.AUDIO
 
 func _add_clip_view(clip: ClipData) -> void:
 	var view := CLIP_VIEW_SCENE.instantiate() as ClipView

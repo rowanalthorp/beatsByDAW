@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://ui1brahxfcso" path="res://assets/icons/track_row/audio-lines.svg" id="1_ook4o"]
 [ext_resource type="Texture2D" uid="uid://ca72u0nolqniq" path="res://assets/icons/track_row/trash.svg" id="2_kex6r"]
 [ext_resource type="Texture2D" uid="uid://wdffvpp5pt8v" path="res://assets/icons/track_row/volume.svg" id="3_aoa84"]
+[ext_resource type="Script" uid="uid://bgnt7udgqpeti" path="res://scenes/ui/timeline/record_button.gd" id="4_m4wtj"]
 
 [node name="TrackRow" type="HBoxContainer" unique_id=37634068]
 custom_minimum_size = Vector2(0, 110)
@@ -68,6 +69,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Effects"
 
+[node name="RecordButton" type="Button" parent="Header/VBox/ButtonRow" unique_id=335531581]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Mic"
+script = ExtResource("4_m4wtj")
+
 [node name="VolumeRow" type="HBoxContainer" parent="Header/VBox" unique_id=893198117]
 layout_mode = 2
 
@@ -112,3 +119,5 @@ unique_name_in_owner = true
 clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
+
+[connection signal="pressed" from="Header/VBox/ButtonRow/RecordButton" to="Header/VBox/ButtonRow/RecordButton" method="_on_pressed"]
