@@ -30,7 +30,8 @@ func setup(new_track: TrackData) -> void:
 	# *_no_signal: show the value without firing the signal, so it isn't written straight back
 	%MuteButton.set_pressed_no_signal(track.muted)
 	%SoloButton.set_pressed_no_signal(track.solo)
-	%VolumeSlider.set_value_no_signal(track.volume_db)
+	# the slider shows plain volume (1 = unchanged), the track keeps dB
+	%VolumeSlider.set_value_no_signal(db_to_linear(track.volume_db))
 	%PanSlider.set_value_no_signal(track.pan)
 	for clip: ClipData in track.clips:
 		_add_clip_view(clip)
@@ -61,8 +62,11 @@ func _on_solo_toggled(on: bool) -> void:
 	track.solo = on
 
 
+## the slider goes by plain volume instead of dB, since a dB slider spends most of its length on
+## "barely audible". 1 is unchanged, 2 is about +6 dB, 0 would be -inf dB so it stops at -60 (the
+## lowest TrackData allows, basically silent)
 func _on_volume_changed(value: float) -> void:
-	track.volume_db = value
+	track.volume_db = maxf(linear_to_db(value), -60.0)
 
 
 func _on_pan_changed(value: float) -> void:

@@ -1,7 +1,7 @@
 extends Node
-## playback clock. fake for now: time just counts up in _process.
-## when audio engine is added, play/pause/seek forward to it and the position
-## gets read back from it. the signals stay the same, so the ui wont change
+## playback clock. while rowan's audio engine is playing something, the position is read from it
+## (through Playback), so the playhead matches what's actually heard. when it isn't (nothing to play,
+## or everything already played to the end) time just counts up in _process
 
 signal playing_changed(playing: bool)
 signal position_changed(seconds: float)
@@ -13,7 +13,12 @@ var position: float = 0.0  ## seconds from the start of the song
 
 
 func _process(delta: float) -> void:
-	if playing:
+	if not playing:
+		return
+	var engine_time := Playback.get_engine_time()
+	if engine_time >= 0.0:
+		_set_position(engine_time)
+	else:
 		_set_position(position + delta)
 
 
