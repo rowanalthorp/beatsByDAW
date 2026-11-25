@@ -47,3 +47,5 @@ bin/*.dylib
 mir/data/
 mir/.venv/
 __pycache__/
+
+cache/recordings/*.wav
