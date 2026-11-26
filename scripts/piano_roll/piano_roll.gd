@@ -35,15 +35,25 @@ var _move_note := -1
 var _grab_beat_offset := 0.0
 var _grab_pitch_offset := 0
 
+## Drum lanes to match the current drum sounds
+# hihat, snare and kick
+const DRUM_LANES: Array[int] = [42, 38, 36]
+const DRUM_NAMES: Array[String] = ["Hihat", "Snare", "Kick"]
+ 
+var drum_mode := false:
+	set(value):
+		drum_mode = value
+		_refresh_size()
 
 func _ready() -> void:
 	_refresh_size()
 
 
 func _refresh_size() -> void:
+	var rows := DRUM_LANES.size() if drum_mode else PITCH_HIGH - PITCH_LOW + 1
 	custom_minimum_size = Vector2(
 		KEY_WIDTH + bars * beats_per_bar * BEAT_WIDTH,
-		(PITCH_HIGH - PITCH_LOW + 1) * ROW_HEIGHT
+		rows * ROW_HEIGHT
 	)
 	queue_redraw()
 
@@ -128,7 +138,7 @@ func _input(event: InputEvent) -> void:
 			var n := notes[_move_note]
 			n.start = _snap_floor(_beat_at(pos.x) - _grab_beat_offset)
 			n.start = minf(n.start, bars * beats_per_bar - n.length)
-			n.pitch = clampi(
+			n.pitch = _pitch_at(pos.y) if drum_mode else clampi(
 				_pitch_at(pos.y) + _grab_pitch_offset, PITCH_LOW, PITCH_HIGH)
 			queue_redraw()
 		elif _preview_pitch != -1 and pos.x < KEY_WIDTH:
@@ -141,22 +151,23 @@ func _input(event: InputEvent) -> void:
 
 func _draw() -> void:
 	var grid_w := bars * beats_per_bar * BEAT_WIDTH
-	var rows := PITCH_HIGH - PITCH_LOW + 1
+	var rows := DRUM_LANES.size() if drum_mode else PITCH_HIGH - PITCH_LOW + 1
 	var h := rows * ROW_HEIGHT
 	var font := get_theme_default_font()
 
 	# Grid background, black-key rows shaded darker.
 	draw_rect(Rect2(0, 0, KEY_WIDTH + grid_w, h), Color(0.13, 0.13, 0.16))
-	for pitch in range(PITCH_LOW, PITCH_HIGH + 1):
-		if _is_black(pitch):
-			draw_rect(
-				Rect2(KEY_WIDTH, _y_of(pitch), grid_w, ROW_HEIGHT),
-				Color(0.0, 0.0, 0.0, 0.22))
-
+	if not drum_mode:
+		for pitch in range(PITCH_LOW, PITCH_HIGH + 1):
+			if _is_black(pitch):
+				draw_rect(
+					Rect2(KEY_WIDTH, _y_of(pitch), grid_w, ROW_HEIGHT),
+					Color(0.0, 0.0, 0.0, 0.22))
 	# Row separators, stronger line at the top of the C row.
+	
 	for r in range(rows + 1):
 		var y := r * ROW_HEIGHT
-		var strong := r > 0 and (PITCH_HIGH - r) % 12 == 0
+		var strong := not drum_mode and r > 0 and (PITCH_HIGH - r) % 12 == 0
 		draw_line(
 			Vector2(0, y), Vector2(KEY_WIDTH + grid_w, y),
 			Color(1, 1, 1, 0.22 if strong else 0.07))
@@ -176,20 +187,30 @@ func _draw() -> void:
 				font, Vector2(x + 4, 12), "Bar %d" % (b / beats_per_bar + 1),
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.5))
 
-	# Keyboard column
-	for pitch in range(PITCH_LOW, PITCH_HIGH + 1):
-		var y := _y_of(pitch)
-		if _is_black(pitch):
-			draw_rect(Rect2(0, y, KEY_WIDTH, ROW_HEIGHT), Color(0.1, 0.1, 0.12))
-		else:
-			draw_rect(Rect2(0, y, KEY_WIDTH, ROW_HEIGHT), Color(0.85, 0.85, 0.88))
-			if pitch % 12 == 0:
-				draw_string(
-					font, Vector2(6, y + ROW_HEIGHT - 3.0), "C%d" % (pitch / 12 - 1),
-					HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.25, 0.25, 0.3))
-		draw_line(
-			Vector2(0, y + ROW_HEIGHT), Vector2(KEY_WIDTH, y + ROW_HEIGHT),
-			Color(0, 0, 0, 0.35))
+	# Keyboard or drum columns
+	if drum_mode:
+		for i in DRUM_LANES.size():
+			var y := i * ROW_HEIGHT
+			draw_rect(Rect2(0, y, KEY_WIDTH, ROW_HEIGHT), Color(0.2, 0.2, 0.24))
+			draw_string(font, Vector2(6, y + ROW_HEIGHT - 3.0), DRUM_NAMES[i],
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.9, 0.9, 0.9))
+			draw_line(
+				Vector2(0, y + ROW_HEIGHT), Vector2(KEY_WIDTH, y + ROW_HEIGHT),
+				Color(0, 0, 0, 0.35))
+	else:
+		for pitch in range(PITCH_LOW, PITCH_HIGH + 1):
+			var y := _y_of(pitch)
+			if _is_black(pitch):
+				draw_rect(Rect2(0, y, KEY_WIDTH, ROW_HEIGHT), Color(0.1, 0.1, 0.12))
+			else:
+				draw_rect(Rect2(0, y, KEY_WIDTH, ROW_HEIGHT), Color(0.85, 0.85, 0.88))
+				if pitch % 12 == 0:
+					draw_string(
+						font, Vector2(6, y + ROW_HEIGHT - 3.0), "C%d" % (pitch / 12 - 1),
+						HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.25, 0.25, 0.3))
+			draw_line(
+				Vector2(0, y + ROW_HEIGHT), Vector2(KEY_WIDTH, y + ROW_HEIGHT),
+				Color(0, 0, 0, 0.35))
 	draw_line(Vector2(KEY_WIDTH, 0), Vector2(KEY_WIDTH, h), Color(0, 0, 0, 0.6))
 
 	for i in notes.size():
@@ -208,12 +229,26 @@ func _draw() -> void:
 func _is_black(pitch: int) -> bool:
 	return pitch % 12 in BLACK_PITCHES
 
+## nearest lane for pitches that don't match one exactly
+func _lane_of(pitch: int) -> int:
+	var best := 0
+	var best_dist := 1000000
+	for i in DRUM_LANES.size():
+		var d := absi(pitch - DRUM_LANES[i])
+		if d < best_dist:
+			best = i
+			best_dist = d
+	return best
 
 func _y_of(pitch: int) -> float:
+	if drum_mode:
+		return _lane_of(pitch) * ROW_HEIGHT
 	return (PITCH_HIGH - pitch) * ROW_HEIGHT
 
 
 func _pitch_at(y: float) -> int:
+	if drum_mode:
+		return DRUM_LANES[clampi(int(y / ROW_HEIGHT), 0, DRUM_LANES.size() - 1)]
 	return clampi(PITCH_HIGH - int(y / ROW_HEIGHT), PITCH_LOW, PITCH_HIGH)
 
 

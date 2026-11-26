@@ -103,6 +103,7 @@ func _process(_delta: float) -> void:
 ## so every note placed, moved or deleted is saved straight into the clip
 func open_clip(clip: NoteClipData) -> void:
 	_clip = clip
+	_roll.drum_mode = clip.instrument == "drums"
 	_instrument_picker.select(["piano", "guitar", "drums"].find(clip.instrument))
 	if _playing:
 		_toggle_play()
@@ -148,4 +149,5 @@ func _on_instrument_selected(index: int) -> void:
 	for player in _preview_players.values():
 		player.stop()
 	_clip.instrument = ["piano", "guitar", "drums"][index]
+	_roll.drum_mode = _clip.instrument == "drums"
 	_mark_clip_dirty()
