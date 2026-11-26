@@ -136,7 +136,7 @@ func _on_import_requested() -> void:
 		_import_dialog = FileDialog.new()
 		_import_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 		_import_dialog.access = FileDialog.ACCESS_FILESYSTEM # anywhere on the computer, not just inside the project
-		_import_dialog.filters = PackedStringArray(["*.wav, *.ogg, *.mp3 ; Audio Files"])
+		_import_dialog.filters = ["*.wav, *.mp3 ; Audio Files"]
 		_import_dialog.use_native_dialog = true # windows' own file picker, so it looks like every other app's
 		_import_dialog.file_selected.connect(Session.import_audio)
 		add_child(_import_dialog)

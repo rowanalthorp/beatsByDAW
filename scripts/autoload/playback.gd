@@ -98,8 +98,7 @@ func _rebuild() -> void:
 	var clips_added := 0
 	for heard: Array in _built_from.slice(1): # slice skips the tempo at the front
 		var track_id: int = _engine.add_track()
-		# the engine wants volume as a plain multiplier (1 = unchanged), not dB. it caps it at 1,
-		# so turning a track up past 0 dB doesnt do anything yet
+		# the engine takes volume as a plain multiplier (1 = unchanged), not dB
 		_engine.set_track_volume(track_id, db_to_linear(heard[0]))
 		for part: Array in heard[1]:
 			var clip: ClipData = part[0]

@@ -1,6 +1,6 @@
 class_name AudioClipData
 extends ClipData
-## a clip on an audio track that plays (part of) an audio file from the computer: wav, ogg or mp3.
+## a clip on an audio track that plays (part of) an audio file from the computer: wav or mp3.
 ## only the file's path gets saved with the clip, the sound itself is loaded from that path when needed
 
 ## full path to the audio file, like C:/Users/me/Music/kick.wav
@@ -30,7 +30,6 @@ func get_stream() -> AudioStream:
 
 ## files outside the project (res://) cant go through load(), since godot only imports what's in the
 ## project folder. each format has its own load_from_file instead
-## from https://docs.godotengine.org/en/stable/tutorials/io/runtime_file_loading_and_saving.html
 static func _load_stream(path: String) -> AudioStream:
 	if _loaded_streams.has(path):
 		return _loaded_streams[path]
@@ -38,8 +37,6 @@ static func _load_stream(path: String) -> AudioStream:
 	match path.get_extension().to_lower():
 		"wav":
 			stream = AudioStreamWAV.load_from_file(path)
-		"ogg":
-			stream = AudioStreamOggVorbis.load_from_file(path)
 		"mp3":
 			stream = AudioStreamMP3.load_from_file(path)
 	if stream == null:

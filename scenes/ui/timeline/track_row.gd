@@ -63,8 +63,8 @@ func _on_solo_toggled(on: bool) -> void:
 
 
 ## the slider goes by plain volume instead of dB, since a dB slider spends most of its length on
-## "barely audible". 1 is unchanged, 2 is about +6 dB, 0 would be -inf dB so it stops at -60 (the
-## lowest TrackData allows, basically silent)
+## "barely audible". 1 is unchanged, 2 is about +6 dB, and 0 would be -inf dB so it stops at -60
+## (the lowest TrackData allows)
 func _on_volume_changed(value: float) -> void:
 	track.volume_db = maxf(linear_to_db(value), -60.0)
 
