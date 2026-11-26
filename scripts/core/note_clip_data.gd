@@ -14,6 +14,10 @@ extends ClipData
 ## tuning reference — frequency of A4 in Hz
 @export var ref_pitch: float = 440.0
 
+## key/scale the piano roll snaps placed notes to — "none" disables snapping
+@export var scale_root: int = 0   # pitch class, 0 = C
+@export var scale_type: String = "none"   # "none" | "major" | "minor"
+
 ## absolute path of rendered wav for the engine, empty until rendered
 ## the engine plays it via add_audio_clip(wav_path, clip.start)
 var wav_path := ""

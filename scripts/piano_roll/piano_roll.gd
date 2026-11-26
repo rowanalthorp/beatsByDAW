@@ -33,7 +33,6 @@ var _preview_pitch := -1
 var _resize_note := -1
 var _move_note := -1
 var _grab_beat_offset := 0.0
-var _grab_pitch_offset := 0
 
 ## Drum lanes to match the current drum sounds
 # hihat, snare and kick
@@ -44,6 +43,18 @@ var drum_mode := false:
 	set(value):
 		drum_mode = value
 		_refresh_size()
+
+## scale tones as pitch-class offsets from the root — placed/dragged pitches
+## snap to these when scale_type names one
+const SCALES := {
+	"major": [0, 2, 4, 5, 7, 9, 11],
+	"minor": [0, 2, 3, 5, 7, 8, 10],
+}
+var scale_root := 0   # pitch class, 0 = C
+var scale_type := "none":
+	set(value):
+		scale_type = value
+		queue_redraw()
 
 func _ready() -> void:
 	_refresh_size()
@@ -76,18 +87,16 @@ func _gui_input(event: InputEvent) -> void:
 				return
 			var idx := _note_at(pos)
 			if idx == -1:
-				idx = _add_note(_beat_at(pos.x), _pitch_at(pos.y))
+				idx = _add_note(_beat_at(pos.x), _snap_pitch(_pitch_at(pos.y)))
 				notes_changed.emit()
 				_move_note = idx
 				_grab_beat_offset = _beat_at(pos.x) - notes[idx].start
-				_grab_pitch_offset = 0
 				queue_redraw()
 			elif _near_right_edge(notes[idx], pos.x):
 				_resize_note = idx
 			else:
 				_move_note = idx
 				_grab_beat_offset = _beat_at(pos.x) - notes[idx].start
-				_grab_pitch_offset = notes[idx].pitch - _pitch_at(pos.y)
 			preview_note_on.emit(notes[idx].pitch)
 		elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
 			accept_event()
@@ -138,8 +147,8 @@ func _input(event: InputEvent) -> void:
 			var n := notes[_move_note]
 			n.start = _snap_floor(_beat_at(pos.x) - _grab_beat_offset)
 			n.start = minf(n.start, bars * beats_per_bar - n.length)
-			n.pitch = _pitch_at(pos.y) if drum_mode else clampi(
-				_pitch_at(pos.y) + _grab_pitch_offset, PITCH_LOW, PITCH_HIGH)
+			# _snap_pitch no-ops in drum mode, so both modes land here
+			n.pitch = _snap_pitch(_pitch_at(pos.y))
 			queue_redraw()
 		elif _preview_pitch != -1 and pos.x < KEY_WIDTH:
 			var p := _pitch_at(pos.y)
@@ -159,7 +168,8 @@ func _draw() -> void:
 	draw_rect(Rect2(0, 0, KEY_WIDTH + grid_w, h), Color(0.13, 0.13, 0.16))
 	if not drum_mode:
 		for pitch in range(PITCH_LOW, PITCH_HIGH + 1):
-			if _is_black(pitch):
+			var out: bool = not _in_scale(pitch) if SCALES.has(scale_type) else _is_black(pitch)
+			if out:
 				draw_rect(
 					Rect2(KEY_WIDTH, _y_of(pitch), grid_w, ROW_HEIGHT),
 					Color(0.0, 0.0, 0.0, 0.22))
@@ -228,6 +238,23 @@ func _draw() -> void:
 
 func _is_black(pitch: int) -> bool:
 	return pitch % 12 in BLACK_PITCHES
+
+
+## drums and "none" treat every pitch as in-scale
+func _in_scale(pitch: int) -> bool:
+	if drum_mode or not SCALES.has(scale_type):
+		return true
+	return SCALES[scale_type].has(posmod(pitch - scale_root, 12))
+
+
+## nearest scale tone, preferring the lower pitch on ties
+func _snap_pitch(pitch: int) -> int:
+	for step in range(0, 6):
+		if _in_scale(pitch - step):
+			return clampi(pitch - step, PITCH_LOW, PITCH_HIGH)
+		if _in_scale(pitch + step):
+			return clampi(pitch + step, PITCH_LOW, PITCH_HIGH)
+	return clampi(pitch, PITCH_LOW, PITCH_HIGH)
 
 ## nearest lane for pitches that don't match one exactly
 func _lane_of(pitch: int) -> int:

@@ -27,6 +27,8 @@ var _project: ProjectData:
 @onready var _instrument_picker: OptionButton = $VBox/Toolbar/InstrumentPicker
 @onready var _transpose_spin: SpinBox = $VBox/Toolbar/TransposeSpin
 @onready var _ref_pitch_spin: SpinBox = $VBox/Toolbar/RefPitchSpin
+@onready var _key_picker: OptionButton = $VBox/Toolbar/KeyPicker
+@onready var _scale_picker: OptionButton = $VBox/Toolbar/ScalePicker
 
 func _mark_clip_dirty() -> void:
 	if _clip != null:
@@ -43,6 +45,14 @@ func _ready() -> void:
 	_instrument_picker.item_selected.connect(_on_instrument_selected)
 	_transpose_spin.value_changed.connect(_on_tuning_changed)
 	_ref_pitch_spin.value_changed.connect(_on_tuning_changed)
+
+	for key_name in ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]:
+		_key_picker.add_item(key_name)
+	_key_picker.item_selected.connect(_on_key_selected)
+	_scale_picker.add_item("None")
+	_scale_picker.add_item("Major")
+	_scale_picker.add_item("Minor")
+	_scale_picker.item_selected.connect(_on_scale_selected)
 
 	# Rendered playback
 	_stream_player = AudioStreamPlayer.new()
@@ -113,6 +123,10 @@ func open_clip(clip: NoteClipData) -> void:
 	_instrument_picker.select(["piano", "guitar", "drums"].find(clip.instrument))
 	_transpose_spin.set_value_no_signal(clip.transpose)
 	_ref_pitch_spin.set_value_no_signal(clip.ref_pitch)
+	_key_picker.select(clampi(clip.scale_root, 0, 11))
+	_scale_picker.select({"none": 0, "major": 1, "minor": 2}.get(clip.scale_type, 0))
+	_roll.scale_root = clip.scale_root
+	_roll.scale_type = clip.scale_type
 	_update_tuning_enabled()
 	if _playing:
 		_toggle_play()
@@ -169,6 +183,22 @@ func _update_tuning_enabled() -> void:
 	var pitched := _clip != null and _clip.instrument != "drums"
 	_transpose_spin.editable = pitched
 	_ref_pitch_spin.editable = pitched
+	_key_picker.disabled = not pitched
+	_scale_picker.disabled = not pitched
+
+## edit-time only — the scale constrains placement, it doesn't change the stored notes
+func _on_key_selected(index: int) -> void:
+	if _clip == null:
+		return
+	_clip.scale_root = index
+	_roll.scale_root = index
+	_roll.queue_redraw()
+
+func _on_scale_selected(index: int) -> void:
+	if _clip == null:
+		return
+	_clip.scale_type = ["none", "major", "minor"][index]
+	_roll.scale_type = _clip.scale_type
 
 ## tuning changed — cached previews and the exported wav are stale now
 func _on_tuning_changed(_value: float) -> void:
