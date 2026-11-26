@@ -25,6 +25,8 @@ var _project: ProjectData:
 @onready var _bpm_spin: SpinBox = $VBox/Toolbar/BpmSpin
 @onready var _clear_button: Button = $VBox/Toolbar/ClearButton
 @onready var _instrument_picker: OptionButton = $VBox/Toolbar/InstrumentPicker
+@onready var _transpose_spin: SpinBox = $VBox/Toolbar/TransposeSpin
+@onready var _ref_pitch_spin: SpinBox = $VBox/Toolbar/RefPitchSpin
 
 func _mark_clip_dirty() -> void:
 	if _clip != null:
@@ -39,6 +41,8 @@ func _ready() -> void:
 	_instrument_picker.add_item("Guitar")
 	_instrument_picker.add_item("Drums")
 	_instrument_picker.item_selected.connect(_on_instrument_selected)
+	_transpose_spin.value_changed.connect(_on_tuning_changed)
+	_ref_pitch_spin.value_changed.connect(_on_tuning_changed)
 
 	# Rendered playback
 	_stream_player = AudioStreamPlayer.new()
@@ -62,7 +66,9 @@ func _toggle_play() -> void:
 		var pattern_beats := float(_roll.bars * _roll.beats_per_bar)
 		var seconds_per_beat := 60.0 / _project.bpm
 		var instrument := _clip.instrument if _clip != null else "piano"
-		var wav := NoteRenderer.render_pattern(_roll.notes, pattern_beats, _project.bpm, instrument)
+		var transpose: int = _clip.transpose if _clip != null else 0
+		var ref_pitch: float = _clip.ref_pitch if _clip != null else 440.0
+		var wav := NoteRenderer.render_pattern(_roll.notes, pattern_beats, _project.bpm, instrument, transpose, ref_pitch)
 		
 		if _clip != null and _clip.notes_dirty:
 			DirAccess.make_dir_recursive_absolute("user://renders")
@@ -105,6 +111,9 @@ func open_clip(clip: NoteClipData) -> void:
 	_clip = clip
 	_roll.drum_mode = clip.instrument == "drums"
 	_instrument_picker.select(["piano", "guitar", "drums"].find(clip.instrument))
+	_transpose_spin.set_value_no_signal(clip.transpose)
+	_ref_pitch_spin.set_value_no_signal(clip.ref_pitch)
+	_update_tuning_enabled()
 	if _playing:
 		_toggle_play()
 	title = "Piano Roll - " + clip.name
@@ -125,9 +134,11 @@ func open_clip(clip: NoteClipData) -> void:
 
 func _preview_note_on(pitch: int, velocity: float = 1.0) -> void:
 	var instrument: String = _clip.instrument if _clip != null else "piano"
+	var transpose: int = _clip.transpose if _clip != null else 0
+	var ref_pitch: float = _clip.ref_pitch if _clip != null else 440.0
 	var cache_key := "%s:%d" % [instrument, pitch]
 	if not _pitch_cache.has(cache_key):
-		_pitch_cache[cache_key] = NoteRenderer.render_note(pitch, 1.0, PREVIEW_SECONDS, instrument)
+		_pitch_cache[cache_key] = NoteRenderer.render_note(pitch, 1.0, PREVIEW_SECONDS, instrument, transpose, ref_pitch)
 	if not _preview_players.has(pitch):
 		var player := AudioStreamPlayer.new()
 		add_child(player)
@@ -150,4 +161,24 @@ func _on_instrument_selected(index: int) -> void:
 		player.stop()
 	_clip.instrument = ["piano", "guitar", "drums"][index]
 	_roll.drum_mode = _clip.instrument == "drums"
+	_update_tuning_enabled()
+	_mark_clip_dirty()
+
+## drums pick voices by pitch, not frequency
+func _update_tuning_enabled() -> void:
+	var pitched := _clip != null and _clip.instrument != "drums"
+	_transpose_spin.editable = pitched
+	_ref_pitch_spin.editable = pitched
+
+## tuning changed — cached previews and the exported wav are stale now
+func _on_tuning_changed(_value: float) -> void:
+	if _clip == null:
+		return
+	if _playing:
+		_toggle_play()
+	for player in _preview_players.values():
+		player.stop()
+	_pitch_cache.clear()
+	_clip.transpose = int(_transpose_spin.value)
+	_clip.ref_pitch = _ref_pitch_spin.value
 	_mark_clip_dirty()

@@ -8,6 +8,12 @@ extends ClipData
 
 @export var instrument: String = "piano"
 
+## semitones the clip plays back shifted by (render-time, notes stay as written)
+@export var transpose: int = 0
+
+## tuning reference — frequency of A4 in Hz
+@export var ref_pitch: float = 440.0
+
 ## absolute path of rendered wav for the engine, empty until rendered
 ## the engine plays it via add_audio_clip(wav_path, clip.start)
 var wav_path := ""

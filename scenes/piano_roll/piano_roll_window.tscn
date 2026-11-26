@@ -51,6 +51,26 @@ text = "LMB: place/drag | drag right edge: resize | RMB: delete | keys: preview"
 [node name="InstrumentPicker" type="OptionButton" parent="VBox/Toolbar" unique_id=1947368022]
 layout_mode = 2
 
+[node name="TransposeLabel" type="Label" parent="VBox/Toolbar"]
+layout_mode = 2
+text = "Transpose:"
+
+[node name="TransposeSpin" type="SpinBox" parent="VBox/Toolbar"]
+layout_mode = 2
+min_value = -24.0
+max_value = 24.0
+
+[node name="A4Label" type="Label" parent="VBox/Toolbar"]
+layout_mode = 2
+text = "A4:"
+
+[node name="RefPitchSpin" type="SpinBox" parent="VBox/Toolbar"]
+layout_mode = 2
+min_value = 400.0
+max_value = 500.0
+step = 0.1
+value = 440.0
+
 [node name="Scroll" type="ScrollContainer" parent="VBox" unique_id=452476487]
 layout_mode = 2
 size_flags_vertical = 3
