@@ -10,7 +10,7 @@ namespace godot {
     protected:
         static void _bind_methods();
     public:
-        static PackedByteArray render_note(int pitch, double velocity, double duration_seconds, int sample_rate);
-        static PackedByteArray render_pattern(Array notes, double length_beats, double bpm, int sample_rate);
+        static PackedByteArray render_note(int pitch, double velocity, double duration_seconds, int sample_rate, int transpose = 0, double ref_pitch = 440.0);
+        static PackedByteArray render_pattern(Array notes, double length_beats, double bpm, int sample_rate, int transpose = 0, double ref_pitch = 440.0);
     };
 }

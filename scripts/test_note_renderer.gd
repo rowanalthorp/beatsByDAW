@@ -42,4 +42,16 @@ func _initialize() -> void:
 		print("%s save: " % entry[1], drum_wav.save_to_wav(path))
 		print(ProjectSettings.globalize_path(path))
 
+	# tuning: transpose +12 = octave up, ref_pitch 432 = slightly flat vs the 440 native_sine
+	for entry in [[12, 440.0, "octave_up"], [0, 432.0, "flat_432"]]:
+		var tune_data: PackedByteArray = PianoRenderer.render_note(60, 1.0, 1.0, 44100, entry[0], entry[1])
+		var tune_wav: AudioStreamWAV = AudioStreamWAV.new()
+		tune_wav.format = AudioStreamWAV.FORMAT_16_BITS
+		tune_wav.mix_rate = 44100
+		tune_wav.stereo = false
+		tune_wav.data = tune_data
+		var tune_path := "user://tune_%s.wav" % entry[2]
+		print("%s save: " % entry[2], tune_wav.save_to_wav(tune_path))
+		print(ProjectSettings.globalize_path(tune_path))
+
 	quit()

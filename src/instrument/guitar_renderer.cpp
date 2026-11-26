@@ -10,8 +10,8 @@
 using namespace godot;
 
 void GuitarRenderer::_bind_methods() {
-    ClassDB::bind_static_method("GuitarRenderer", D_METHOD("render_note", "pitch", "velocity", "duration_seconds", "sample_rate"), &GuitarRenderer::render_note);
-    ClassDB::bind_static_method("GuitarRenderer", D_METHOD("render_pattern", "notes", "length_beats", "bpm", "sample_rate"), &GuitarRenderer::render_pattern);
+    ClassDB::bind_static_method("GuitarRenderer", D_METHOD("render_note", "pitch", "velocity", "duration_seconds", "sample_rate", "transpose", "ref_pitch"), &GuitarRenderer::render_note, DEFVAL(0), DEFVAL(440.0));
+    ClassDB::bind_static_method("GuitarRenderer", D_METHOD("render_pattern", "notes", "length_beats", "bpm", "sample_rate", "transpose", "ref_pitch"), &GuitarRenderer::render_pattern, DEFVAL(0), DEFVAL(440.0));
 }
 
 namespace {
@@ -21,8 +21,8 @@ namespace {
     constexpr double MAX_NOTE_AGE = 6.0;
 
     // From Karplus-Strong, noise burst fed into a filtered delay
-    std::vector<double> make_string(int pitch, double velocity, int sample_rate) {
-        double freq = 440.0 * Math::pow(2.0, (pitch - 69) / 12.0);
+    std::vector<double> make_string(int pitch, double velocity, int sample_rate, int transpose, double ref_pitch) {
+        double freq = ref_pitch * Math::pow(2.0, (pitch + transpose - 69) / 12.0);
         int n = std::max(2, (int)Math::round(sample_rate / freq));
         std::vector<double> delay(n);
         for (int i = 0; i < n; i++)
@@ -31,8 +31,8 @@ namespace {
     }
 }
 
-PackedByteArray GuitarRenderer::render_note(int pitch, double velocity, double duration_seconds, int sample_rate) {
-    auto string = make_string(pitch, velocity, sample_rate);
+PackedByteArray GuitarRenderer::render_note(int pitch, double velocity, double duration_seconds, int sample_rate, int transpose, double ref_pitch) {
+    auto string = make_string(pitch, velocity, sample_rate, transpose, ref_pitch);
     int n = (int)string.size();
     int held = std::max(1, (int)Math::round(duration_seconds * sample_rate));
     int total = std::min(held + (int)Math::round(TAIL_SECONDS * sample_rate), (int)(MAX_NOTE_AGE * sample_rate));
@@ -49,7 +49,7 @@ PackedByteArray GuitarRenderer::render_note(int pitch, double velocity, double d
 }
 
 // From Karplus-Strong plucked string
-PackedByteArray GuitarRenderer::render_pattern(Array notes, double length_beats, double bpm, int sample_rate) {
+PackedByteArray GuitarRenderer::render_pattern(Array notes, double length_beats, double bpm, int sample_rate, int transpose, double ref_pitch) {
     double seconds_per_beat = 60.0 / bpm;
 
     struct Event {
@@ -65,7 +65,7 @@ PackedByteArray GuitarRenderer::render_pattern(Array notes, double length_beats,
         int64_t held = std::max<int64_t>(1, (int64_t)Math::round((double)note["length"] * seconds_per_beat * sample_rate));
         int64_t total = std::min<int64_t>(held + (int64_t)Math::round(TAIL_SECONDS * sample_rate),
                                           (int64_t)(MAX_NOTE_AGE * sample_rate));
-        scheduled.push_back({start, 0, total, make_string((int)note["pitch"], (double)note["velocity"], sample_rate)});
+        scheduled.push_back({start, 0, total, make_string((int)note["pitch"], (double)note["velocity"], sample_rate, transpose, ref_pitch)});
     }
 
     int64_t pattern_samples = std::max<int64_t>(1, (int64_t)Math::round(length_beats * seconds_per_beat * sample_rate));

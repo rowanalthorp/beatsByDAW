@@ -10,16 +10,16 @@
 using namespace godot;
 
 void DrumRenderer::_bind_methods() {
-    ClassDB::bind_static_method("DrumRenderer", D_METHOD("render_note", "pitch", "velocity", "duration_seconds", "sample_rate"), &DrumRenderer::render_note);
-    ClassDB::bind_static_method("DrumRenderer", D_METHOD("render_pattern", "notes", "length_beats", "bpm", "sample_rate"), &DrumRenderer::render_pattern);
+    ClassDB::bind_static_method("DrumRenderer", D_METHOD("render_note", "pitch", "velocity", "duration_seconds", "sample_rate", "transpose", "ref_pitch"), &DrumRenderer::render_note, DEFVAL(0), DEFVAL(440.0));
+    ClassDB::bind_static_method("DrumRenderer", D_METHOD("render_pattern", "notes", "length_beats", "bpm", "sample_rate", "transpose", "ref_pitch"), &DrumRenderer::render_pattern, DEFVAL(0), DEFVAL(440.0));
 }
 
 namespace {
     constexpr double MASTER_GAIN = 0.7;
     constexpr double MAX_DRUM_SECONDS = 1.5;   // drums are one-shots; note length doesn't extend them
 
-    // simplified 808-style drums — Werner et al. [22 in README]
-    // pitch ranges pick the drum voice — also the lanes a step grid would use:
+    // simplified 808-style drums from Werner et al. [22 in README]
+    // pitch ranges pick the drum voice, also the lanes a step grid would use:
     // kick <= 37 (GM 35/36), snare 38-41 (GM 38/40), hihat >= 42 (GM 42/44/46)
     enum class Voice { KICK, SNARE, HIHAT };
     Voice voice_for(int pitch) {
@@ -54,21 +54,18 @@ namespace {
         double s = 0.0;
         switch (v.voice) {
             case Voice::KICK: {
-                // pitch sweep 150→50Hz over ~50ms + amplitude decay — the classic synth kick
                 double f = 50.0 + 100.0 * std::exp(-v.t / 0.05);
                 v.phase += Math::TAU * f * dt;
                 s = std::sin(v.phase) * std::exp(-v.t / 0.28);
                 break;
             }
             case Voice::SNARE: {
-                // 180Hz body + noise snap
                 double tone = std::sin(Math::TAU * 180.0 * v.t) * std::exp(-v.t / 0.07);
                 double snap = noise() * std::exp(-v.t / 0.11);
                 s = 0.4 * tone + 0.6 * snap;
                 break;
             }
             case Voice::HIHAT: {
-                // first-difference of white noise = crude highpass
                 double n = noise();
                 s = (n - v.prev_noise) * 0.5 * std::exp(-v.t / 0.04);
                 v.prev_noise = n;
@@ -79,7 +76,7 @@ namespace {
     }
 }
 
-PackedByteArray DrumRenderer::render_note(int pitch, double velocity, double duration_seconds, int sample_rate) {
+PackedByteArray DrumRenderer::render_note(int pitch, double velocity, double duration_seconds, int sample_rate, int /*transpose*/, double /*ref_pitch*/) {
     double dt = 1.0 / sample_rate;
     int64_t total = std::min<int64_t>((int64_t)std::max(1.0, duration_seconds) * sample_rate,
                                       (int64_t)(MAX_DRUM_SECONDS * sample_rate));
@@ -91,7 +88,7 @@ PackedByteArray DrumRenderer::render_note(int pitch, double velocity, double dur
     return data;
 }
 
-PackedByteArray DrumRenderer::render_pattern(Array notes, double length_beats, double bpm, int sample_rate) {
+PackedByteArray DrumRenderer::render_pattern(Array notes, double length_beats, double bpm, int sample_rate, int /*transpose*/, double /*ref_pitch*/) {
     double dt = 1.0 / sample_rate;
     double seconds_per_beat = 60.0 / bpm;
 
