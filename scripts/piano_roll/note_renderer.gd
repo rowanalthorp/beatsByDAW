@@ -5,6 +5,8 @@ static func render_note(pitch: int, velocity: float, duration_seconds: float, in
 	var data: PackedByteArray
 	if instrument == "guitar":
 		data = GuitarRenderer.render_note(pitch, velocity, duration_seconds, sample_rate)
+	elif instrument == "drums":
+		data = DrumRenderer.render_note(pitch, velocity, duration_seconds, sample_rate)
 	else:
 		data = PianoRenderer.render_note(pitch, velocity, duration_seconds, sample_rate)
 	var wav := AudioStreamWAV.new()
@@ -19,6 +21,8 @@ static func render_pattern(notes: Array[Dictionary], length_beats: float, bpm: f
 	var data: PackedByteArray
 	if instrument == "guitar":
 		data = GuitarRenderer.render_pattern(notes, length_beats, bpm, sample_rate)
+	elif instrument == "drums":
+		data = DrumRenderer.render_pattern(notes, length_beats, bpm, sample_rate)
 	else:
 		data = PianoRenderer.render_pattern(notes, length_beats, bpm, sample_rate)
 	var wav := AudioStreamWAV.new()

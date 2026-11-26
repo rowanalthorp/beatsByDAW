@@ -9,6 +9,7 @@
 
 #include "instrument/piano_renderer.h"
 #include "instrument/guitar_renderer.h"
+#include "instrument/drum_renderer.h"
 
 using namespace godot;
 
@@ -23,6 +24,7 @@ void initialize_daw_module(ModuleInitializationLevel p_level) {
     GDREGISTER_RUNTIME_CLASS(AudioEngine);
     GDREGISTER_RUNTIME_CLASS(PianoRenderer);
     GDREGISTER_RUNTIME_CLASS(GuitarRenderer);
+    GDREGISTER_RUNTIME_CLASS(DrumRenderer);
 }
 
 void uninitialize_daw_module(ModuleInitializationLevel p_level) {

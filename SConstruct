@@ -25,6 +25,7 @@ sources = [
     "src/audio_engine/track_channel.cpp",
     "src/instrument/piano_renderer.cpp",
     "src/instrument/guitar_renderer.cpp",
+    "src/instrument/drum_renderer.cpp",
 ]
 
 # Build the shared library depending on the target platform
