@@ -37,6 +37,7 @@ func _ready() -> void:
 
 	_instrument_picker.add_item("Piano")
 	_instrument_picker.add_item("Guitar")
+	_instrument_picker.add_item("Drums")
 	_instrument_picker.item_selected.connect(_on_instrument_selected)
 
 	# Rendered playback
@@ -102,7 +103,7 @@ func _process(_delta: float) -> void:
 ## so every note placed, moved or deleted is saved straight into the clip
 func open_clip(clip: NoteClipData) -> void:
 	_clip = clip
-	_instrument_picker.select(1 if clip.instrument == "guitar" else 0)
+	_instrument_picker.select(["piano", "guitar", "drums"].find(clip.instrument))
 	if _playing:
 		_toggle_play()
 	title = "Piano Roll - " + clip.name
@@ -146,5 +147,5 @@ func _on_instrument_selected(index: int) -> void:
 		_toggle_play()
 	for player in _preview_players.values():
 		player.stop()
-	_clip.instrument = "guitar" if index == 1 else "piano"
+	_clip.instrument = ["piano", "guitar", "drums"][index]
 	_mark_clip_dirty()

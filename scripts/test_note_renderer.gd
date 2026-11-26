@@ -31,4 +31,15 @@ func _initialize() -> void:
 	print("Guitar save: ", guitar_wav.save_to_wav("user://guitar_pluck.wav"))
 	print(ProjectSettings.globalize_path("user://guitar_pluck.wav"))
 
+	for entry in [[36, "kick"], [38, "snare"], [42, "hihat"]]:
+		var drum_data: PackedByteArray = DrumRenderer.render_note(entry[0], 1.0, 1.0, 44100)
+		var drum_wav: AudioStreamWAV = AudioStreamWAV.new()
+		drum_wav.format = AudioStreamWAV.FORMAT_16_BITS
+		drum_wav.mix_rate = 44100
+		drum_wav.stereo = false
+		drum_wav.data = drum_data
+		var path := "user://drum_%s.wav" % entry[1]
+		print("%s save: " % entry[1], drum_wav.save_to_wav(path))
+		print(ProjectSettings.globalize_path(path))
+
 	quit()
