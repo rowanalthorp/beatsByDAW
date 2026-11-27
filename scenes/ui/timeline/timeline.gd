@@ -13,24 +13,26 @@ func _ready() -> void:
 	# rows are HBoxContainers, so the theme puts a gap between the header and the lane
 	# it's a gap of 4 while writing this, but in case anything changes I just get the number from the theme instead of hardcoding
 	_lane_start = HEADER_WIDTH + get_theme_constant(&"separation", &"HBoxContainer")
+
 	Session.project_changed.connect(_on_project_changed)
-	_on_project_changed(Session.project)
-	Transport.position_changed.connect(_on_position_changed)
-	%Ruler.gui_input.connect(_on_ruler_gui_input)
-	_on_position_changed(Transport.position)  # put the line at 0 on startup, not where it sits in the editor
 	Session.view_changed.connect(_on_view_changed)
-	%HScrollBar.value_changed.connect(_on_scroll_changed)
-	%Ruler.resized.connect(_update_scrollbar) # window/sidebar size changes how much of the song fits
-	Transport.position_changed.connect(_follow_playhead)
 	Session.song_length_changed.connect(_update_scrollbar) # clip dragged or deleted, the song might be longer/shorter
+	Transport.position_changed.connect(_on_position_changed)
+	Transport.position_changed.connect(_follow_playhead)
+	%Ruler.gui_input.connect(_on_ruler_gui_input)
+	%Ruler.resized.connect(_update_scrollbar) # window/sidebar size changes how much of the song fits
+	%HScrollBar.value_changed.connect(_on_scroll_changed)
+
+	_on_project_changed(Session.project)
+	_on_position_changed(Transport.position)  # put the line at 0 on startup, not where it sits in the editor
 
 
 ## rebuilds every row and listens to the new projects track signals
 func _on_project_changed(project: ProjectData) -> void:
 	# if a project is "loaded" then session is listening to THAT ProjectData signals.
 	# what we do here is stop listening to the "old" project, so we arent accidentally
-	# pinging that projects signals, and accidentally overwritting another project's
-	# data when making changing in the "new" project
+	# pinging that projects signals, and accidentally overwriting another project's
+	# data when making changes in the "new" project
 	if _project:
 		_project.track_added.disconnect(_on_track_added)
 		_project.track_removed.disconnect(_on_track_removed)
@@ -69,6 +71,7 @@ func _on_position_changed(seconds: float) -> void:
 	%Playhead.offset_right = x + 1.0
 	# scrolled past it to the left, hide it or it'd draw over the track headers
 	%Playhead.visible = x >= _lane_start
+
 
 ## clicking the ruler jumps the clock there
 func _on_ruler_gui_input(event: InputEvent) -> void:

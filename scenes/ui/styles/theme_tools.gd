@@ -1,11 +1,12 @@
 class_name ThemeTools
-# bored so I made light mode/dark mode :)
+## builds the light theme from the dark one at runtime. bored so I made light mode/dark mode :)
+
 
 ## returns a light copy of the default dark theme. greys flip. saturated accents unchanged
 static func make_light(dark: Theme) -> Theme:
 	# start from godots default theme. node types main_theme doesn't set (like labels) use the defaults look, so they need flipping too
 	# duplicate() copies a list, but keeps pointers to the same values, while duplicate(true) duplicates the values with new pointers
-	var light: Theme = ThemeDB.get_default_theme().duplicate(true) 
+	var light: Theme = ThemeDB.get_default_theme().duplicate(true)
 	light.merge_with(dark.duplicate(true))
 	# godots default theme sets every node type's font size to 16 by name, but main_theme only sets a few
 	# and lets the rest fall back to its default_font_size (14). those copied 16s win over the fallback, so
@@ -26,7 +27,7 @@ static func make_light(dark: Theme) -> Theme:
 			if flipped.has(box):
 				continue
 			flipped[box] = true
-			
+
 			# attempt to store box as a StyleBoxFlat, and if returns null, we know box is not a StyleBoxFlat and can ignore it
 			var flat := box as StyleBoxFlat
 			if flat:
@@ -40,6 +41,7 @@ static func make_light(dark: Theme) -> Theme:
 			if line:
 				line.color = flip(line.color)
 	return light
+
 
 ## inverts brightness of greys. colours with real saturation are accents and are unchanged (i.e the clips)
 static func flip(colour: Color) -> Color:

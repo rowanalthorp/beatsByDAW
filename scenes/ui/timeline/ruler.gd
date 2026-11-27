@@ -14,7 +14,8 @@ var _project: ProjectData # the project whose changed signal is connected
 
 func _ready() -> void:
 	Session.project_changed.connect(_on_project_changed)
-	Session.view_changed.connect(queue_redraw) # mode switch (and zoom later) means redraw
+	Session.view_changed.connect(queue_redraw) # ruler mode, zoom or scroll changed, so redraw
+
 	_on_project_changed(Session.project)
 
 
@@ -33,13 +34,13 @@ func _on_project_changed(project: ProjectData) -> void:
 func _draw() -> void:
 	# pull the text color + font from the theme instead of hardcoding white,
 	# otherwise light mode would leave white lines on a white ruler
-	# (thank god I decided to implement light moe before I did all the actual functionality lol)
+	# (thank god I decided to implement light mode before I did all the actual functionality lol)
 	var color := get_theme_color(&"font_color", &"Label")
 	var faded := Color(color, 0.5) # beat ticks are half see-through so the bar lines stand out
 	var font := get_theme_default_font()
 	var font_size := get_theme_default_font_size()
 	var pps := Session.pixels_per_second # gets used enough it's cleaner with a shorthand var
-	
+
 	# how far apart the numbered lines and the small ticks are, in seconds.
 	# bars mode: a numbered line every bar, a tick every beat.
 	#   60 / bpm = seconds per beat, so at 120 bpm thats 0.5s a beat and 2s a bar
@@ -59,20 +60,20 @@ func _draw() -> void:
 			label_step *= 2.0
 		# a tick per beat if they fit, otherwise fall back to a tick per bar
 		tick_step = beat if beat * pps >= MIN_TICK_SPACING else bar_len
-	
+
 	# how wide those are on screen right now (seconds * px per second).
 	# at 120 bpm and 40 px/s thats 0.5s * 40 = 20px a beat, 80px a bar
 	var tick_px := tick_step * pps
-	
+
 	var scroll := Session.scroll_seconds
 	# start at the last label at or before the left edge, no point looping over everything scrolled past
 	var i := floori(scroll / label_step)
 	while (i * label_step - scroll) * pps <= size.x:
 		var x := (i * label_step - scroll) * pps
-		
+
 		# full height line marks the start of each bar/labelled time
 		draw_line(Vector2(x, 0), Vector2(x, size.y), color)
-		
+
 		# label just right of the line. bars are counted from 1 like musicians do,
 		# so bar index 0 shows "1", but seconds start at 0:00 like a clock.
 		# draw_string puts the text's baseline (bottom of the letters) at the y we give it,
@@ -80,7 +81,7 @@ func _draw() -> void:
 		var text := _format_seconds(i * label_step) if Session.show_seconds else str(roundi(i * label_step / bar_len) + 1)
 		draw_string(font, Vector2(x + 4, font.get_ascent(font_size)), text,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
-		
+
 		# small ticks between labels: the beats inside a bar, or the halfway mark in seconds mode
 		# (tick 0 is the labelled line itself, so start at 1).
 		# when zoomed way out the ticks get squished together into a solid block,
