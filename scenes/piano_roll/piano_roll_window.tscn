@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://dh7fv8rt5jtys" path="res://scripts/piano_roll/piano_roll.gd" id="2_roll"]
 
 [node name="PianoRollWindow" type="Window" unique_id=1359880758]
-title = "Piano Roll — Piano"
+title = "Piano Roll"
 position = Vector2i(80, 50)
 size = Vector2i(1150, 660)
 visible = false
@@ -59,11 +59,11 @@ text = "Transpose:"
 layout_mode = 2
 min_value = -24.0
 max_value = 24.0
-tooltip_text = "Shift playback pitch by semitones — written notes stay the same"
+tooltip_text = "Shift playback pitch by semitones"
 
 [node name="A4Label" type="Label" parent="VBox/Toolbar"]
 layout_mode = 2
-text = "A4:"
+text = "Tune:"
 
 [node name="RefPitchSpin" type="SpinBox" parent="VBox/Toolbar"]
 layout_mode = 2
@@ -71,7 +71,7 @@ min_value = 400.0
 max_value = 500.0
 step = 0.1
 value = 440.0
-tooltip_text = "Frequency of A4 in Hz — tunes all pitched instruments"
+tooltip_text = "Tunes all pitched instruments"
 
 [node name="KeyLabel" type="Label" parent="VBox/Toolbar"]
 layout_mode = 2
@@ -79,7 +79,7 @@ text = "Key:"
 
 [node name="KeyPicker" type="OptionButton" parent="VBox/Toolbar"]
 layout_mode = 2
-tooltip_text = "Key root — placed notes snap to this key's scale tones"
+tooltip_text = "Placed notes snap to this key's scale tones"
 
 [node name="ScaleLabel" type="Label" parent="VBox/Toolbar"]
 layout_mode = 2
@@ -87,7 +87,7 @@ text = "Scale:"
 
 [node name="ScalePicker" type="OptionButton" parent="VBox/Toolbar"]
 layout_mode = 2
-tooltip_text = "Scale — constrains note placement only, doesn't affect playback"
+tooltip_text = "Constrains note placement only; doesn't affect playback"
 
 [node name="Scroll" type="ScrollContainer" parent="VBox" unique_id=452476487]
 layout_mode = 2

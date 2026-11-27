@@ -186,7 +186,7 @@ func _update_tuning_enabled() -> void:
 	_key_picker.disabled = not pitched
 	_scale_picker.disabled = not pitched
 
-## edit-time only — the scale constrains placement, it doesn't change the stored notes
+## edit-time only. the scale constrains placement, it doesn't change the stored notes
 func _on_key_selected(index: int) -> void:
 	if _clip == null:
 		return
@@ -200,7 +200,7 @@ func _on_scale_selected(index: int) -> void:
 	_clip.scale_type = ["none", "major", "minor"][index]
 	_roll.scale_type = _clip.scale_type
 
-## tuning changed — cached previews and the exported wav are stale now
+## tuning changed, cached previews and the exported wav are stale now
 func _on_tuning_changed(_value: float) -> void:
 	if _clip == null:
 		return

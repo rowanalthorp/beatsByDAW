@@ -11,10 +11,10 @@ extends ClipData
 ## semitones the clip plays back shifted by (render-time, notes stay as written)
 @export var transpose: int = 0
 
-## tuning reference — frequency of A4 in Hz
+## tuning reference, the frequency of A4 in Hz
 @export var ref_pitch: float = 440.0
 
-## key/scale the piano roll snaps placed notes to — "none" disables snapping
+## key/scale the piano roll snaps placed notes to. "none" disables snapping
 @export var scale_root: int = 0   # pitch class, 0 = C
 @export var scale_type: String = "none"   # "none" | "major" | "minor"
 

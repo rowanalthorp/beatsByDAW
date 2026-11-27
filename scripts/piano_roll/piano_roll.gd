@@ -44,7 +44,7 @@ var drum_mode := false:
 		drum_mode = value
 		_refresh_size()
 
-## scale tones as pitch-class offsets from the root — placed/dragged pitches
+## scale tones as pitch-class offsets from the root. placed and dragged pitches
 ## snap to these when scale_type names one
 const SCALES := {
 	"major": [0, 2, 4, 5, 7, 9, 11],
