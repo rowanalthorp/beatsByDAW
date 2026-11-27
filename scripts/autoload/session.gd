@@ -97,7 +97,7 @@ func remove_track(track: TrackData) -> void:
 	save_undo_step("Delete Track", before)
 
 
-## a new empty track that isnt added yet, so import can add it in the same undo step as their clip
+## a new empty track that isnt added yet, so import and record can add it in the same undo step as their clip
 func make_track(kind: TrackData.Kind) -> TrackData:
 	var track := TrackData.new()
 	track.kind = kind

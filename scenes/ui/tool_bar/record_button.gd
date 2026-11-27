@@ -9,6 +9,7 @@ var mic_player: AudioStreamPlayer
 var recording_track: TrackData
 var recording_clip: AudioClipData
 var recording_started_at_usec := 0
+var before_record: Dictionary # song before recording, so the take is one undo step
 var message_dialog: AcceptDialog
 var default_modulate: Color
 
@@ -57,10 +58,12 @@ func _on_pressed() -> void:
 		_stop_recording()
 		return
 
+	before_record = Session.snapshot()
 	var track: TrackData = Session.selected_track
 	if track == null:
-		Session.add_new_track(TrackData.Kind.AUDIO)
-		track = Session.project.tracks[Session.project.tracks.size() - 1]
+		# make_track so the new track and the take are one undo step
+		track = Session.make_track(TrackData.Kind.AUDIO)
+		Session.project.add_track(track)
 		Session.selected_track = track
 	if track.kind != TrackData.Kind.AUDIO:
 		message_dialog.dialog_text = "Yo, just a heads up! Select an audio track to record microphone audio. Ty"
@@ -125,7 +128,9 @@ func _stop_recording() -> void:
 	recording_clip.file_path = ProjectSettings.globalize_path(recording_path)
 	recording_clip.name = "Microphone Recording"
 	recording_clip.length = maxf(recording.get_length(), 0.01)
+	Session.clear_under(recording_clip) # the take wins over whatever's under it, same as import
 	Session.song_length_changed.emit()
+	Session.save_undo_step("Record Audio", before_record)
 	recording_clip = null
 	recording_track = null
 
@@ -137,3 +142,5 @@ func _discard_recording_clip() -> void:
 		Session.selected_clip = null
 	recording_clip = null
 	recording_track = null
+	# a failed take can still leave a new track behind, so save that as a step
+	Session.save_undo_step("Record Audio", before_record)
