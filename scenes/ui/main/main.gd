@@ -10,7 +10,8 @@ const SHORTCUT_ACTIONS: Array[StringName] = [
 	&"play_pause", &"go_to_start", &"go_to_end",
 	&"delete_selected", &"zoom_in", &"zoom_out",
 	&"zoom_fit", &"split", &"copy", &"cut", &"paste",
-	&"duplicate"
+	&"duplicate",
+	&"redo", &"undo" # redo first, or ctrl+shift+z gets caught as ctrl+z
 ]
 const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll/piano_roll_window.tscn")
 
@@ -78,6 +79,10 @@ func _on_shortcut(action: StringName) -> void:
 			Session.paste()
 		&"duplicate":
 			Session.duplicate_selected()
+		&"undo":
+			Session.undo()
+		&"redo":
+			Session.redo()
 		_:
 			print("Shortcut: ", action) # catch everything with no handler
 
