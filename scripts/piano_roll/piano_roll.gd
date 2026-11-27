@@ -38,6 +38,7 @@ var _grab_beat_offset := 0.0
 # hihat, snare and kick
 const DRUM_LANES: Array[int] = [42, 38, 36]
 const DRUM_NAMES: Array[String] = ["Hihat", "Snare", "Kick"]
+const DRUM_ROW_HEIGHT := 64.0
  
 var drum_mode := false:
 	set(value):
@@ -64,7 +65,7 @@ func _refresh_size() -> void:
 	var rows := DRUM_LANES.size() if drum_mode else PITCH_HIGH - PITCH_LOW + 1
 	custom_minimum_size = Vector2(
 		KEY_WIDTH + bars * beats_per_bar * BEAT_WIDTH,
-		rows * ROW_HEIGHT
+		rows * _row_h()
 	)
 	queue_redraw()
 
@@ -161,7 +162,7 @@ func _input(event: InputEvent) -> void:
 func _draw() -> void:
 	var grid_w := bars * beats_per_bar * BEAT_WIDTH
 	var rows := DRUM_LANES.size() if drum_mode else PITCH_HIGH - PITCH_LOW + 1
-	var h := rows * ROW_HEIGHT
+	var h := rows * _row_h()
 	var font := get_theme_default_font()
 
 	# Grid background, black-key rows shaded darker.
@@ -176,7 +177,7 @@ func _draw() -> void:
 	# Row separators, stronger line at the top of the C row.
 	
 	for r in range(rows + 1):
-		var y := r * ROW_HEIGHT
+		var y := r * _row_h()
 		var strong := not drum_mode and r > 0 and (PITCH_HIGH - r) % 12 == 0
 		draw_line(
 			Vector2(0, y), Vector2(KEY_WIDTH + grid_w, y),
@@ -200,12 +201,12 @@ func _draw() -> void:
 	# Keyboard or drum columns
 	if drum_mode:
 		for i in DRUM_LANES.size():
-			var y := i * ROW_HEIGHT
-			draw_rect(Rect2(0, y, KEY_WIDTH, ROW_HEIGHT), Color(0.2, 0.2, 0.24))
-			draw_string(font, Vector2(6, y + ROW_HEIGHT - 3.0), DRUM_NAMES[i],
+			var y := i * DRUM_ROW_HEIGHT
+			draw_rect(Rect2(0, y, KEY_WIDTH, DRUM_ROW_HEIGHT), Color(0.2, 0.2, 0.24))
+			draw_string(font, Vector2(6, y + DRUM_ROW_HEIGHT - 3.0), DRUM_NAMES[i],
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.9, 0.9, 0.9))
 			draw_line(
-				Vector2(0, y + ROW_HEIGHT), Vector2(KEY_WIDTH, y + ROW_HEIGHT),
+				Vector2(0, y + DRUM_ROW_HEIGHT), Vector2(KEY_WIDTH, y + DRUM_ROW_HEIGHT),
 				Color(0, 0, 0, 0.35))
 	else:
 		for pitch in range(PITCH_LOW, PITCH_HIGH + 1):
@@ -234,6 +235,11 @@ func _draw() -> void:
 	if show_playhead:
 		var x := KEY_WIDTH + playhead_beat * BEAT_WIDTH
 		draw_line(Vector2(x, 0), Vector2(x, h), Color(1.0, 0.35, 0.35), 2.0)
+
+
+## drum lanes are drawn taller than piano rows
+func _row_h() -> float:
+	return DRUM_ROW_HEIGHT if drum_mode else ROW_HEIGHT
 
 
 func _is_black(pitch: int) -> bool:
@@ -269,13 +275,13 @@ func _lane_of(pitch: int) -> int:
 
 func _y_of(pitch: int) -> float:
 	if drum_mode:
-		return _lane_of(pitch) * ROW_HEIGHT
+		return _lane_of(pitch) * DRUM_ROW_HEIGHT
 	return (PITCH_HIGH - pitch) * ROW_HEIGHT
 
 
 func _pitch_at(y: float) -> int:
 	if drum_mode:
-		return DRUM_LANES[clampi(int(y / ROW_HEIGHT), 0, DRUM_LANES.size() - 1)]
+		return DRUM_LANES[clampi(int(y / DRUM_ROW_HEIGHT), 0, DRUM_LANES.size() - 1)]
 	return clampi(PITCH_HIGH - int(y / ROW_HEIGHT), PITCH_LOW, PITCH_HIGH)
 
 
@@ -314,5 +320,5 @@ func _note_rect(n: Dictionary) -> Rect2:
 		KEY_WIDTH + n.start * BEAT_WIDTH,
 		_y_of(n.pitch) + 1.0,
 		n.length * BEAT_WIDTH - 1.0,
-		ROW_HEIGHT - 2.0
+		_row_h() - 2.0
 	)

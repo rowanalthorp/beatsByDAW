@@ -25,10 +25,10 @@ var _project: ProjectData:
 @onready var _bpm_spin: SpinBox = $VBox/Toolbar/BpmSpin
 @onready var _clear_button: Button = $VBox/Toolbar/ClearButton
 @onready var _instrument_picker: OptionButton = $VBox/Toolbar/InstrumentPicker
-@onready var _transpose_spin: SpinBox = $VBox/Toolbar/TransposeSpin
-@onready var _ref_pitch_spin: SpinBox = $VBox/Toolbar/RefPitchSpin
-@onready var _key_picker: OptionButton = $VBox/Toolbar/KeyPicker
-@onready var _scale_picker: OptionButton = $VBox/Toolbar/ScalePicker
+@onready var _transpose_spin: SpinBox = $VBox/TuneBar/TransposeSpin
+@onready var _ref_pitch_spin: SpinBox = $VBox/TuneBar/RefPitchSpin
+@onready var _key_picker: OptionButton = $VBox/TuneBar/KeyPicker
+@onready var _scale_picker: OptionButton = $VBox/TuneBar/ScalePicker
 
 func _mark_clip_dirty() -> void:
 	if _clip != null:
@@ -139,7 +139,9 @@ func open_clip(clip: NoteClipData) -> void:
 	_bpm_spin.set_value_no_signal(_project.bpm) # tempo may have changed in the bottom bar since last open
 	_roll.queue_redraw()
 	# size the window to fit the toolbar and the clip's bars, so theres no empty grey past the last bar
-	var toolbar_width: float = $VBox/Toolbar.get_combined_minimum_size().x
+	var toolbar_width: float = maxf(
+		$VBox/Toolbar.get_combined_minimum_size().x,
+		$VBox/TuneBar.get_combined_minimum_size().x)
 	var roll_width := _roll.custom_minimum_size.x + 16.0 # + room for the vertical scroll bar
 	var wanted := Vector2i(int(maxf(toolbar_width, roll_width)), 660)
 	# clamped version shrinks it to at most 85% of the main window if it doesnt fit,
