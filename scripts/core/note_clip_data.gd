@@ -26,7 +26,7 @@ var wav_path := ""
 var notes_dirty := true
 
 var _stream: AudioStreamWAV # the last render, reused until something it was made from changes
-var _rendered_from: Array = [] # copy of [notes, length, bpm] at the last render, to tell if it's out of date
+var _rendered_from: Array = [] # copy of what the last render was made from, to tell if it's out of date
 
 ## the piano roll always shows notes from beat 0, so hiding the start with offset (like audio)
 ## doesnt work for notes. instead the notes slide back by however much the edge moved, so they
@@ -62,13 +62,14 @@ func split_at(at: float) -> ClipData:
 	return right_half
 
 
-## the notes rendered to sound with kris's piano. renders again only when the notes, the clip's length
-## or the tempo changed since last time. the piano roll edits notes straight in the array without telling
-## the clip, so comparing against a copy of what the last render was made from catches every kind of edit
+## the notes rendered to sound with the clip's instrument. renders again only when the notes, the
+## clip's length, the tempo or the tuning changed since last time. the piano roll edits notes straight
+## in the array without telling the clip, so comparing against a copy of what the last render was
+## made from catches every kind of edit
 func get_stream() -> AudioStream:
-	var made_from := [notes.duplicate(true), length, Session.project.bpm]
+	var made_from := [notes.duplicate(true), length, Session.project.bpm, instrument, transpose, ref_pitch]
 	if _stream == null or made_from != _rendered_from:
-		_stream = NoteRenderer.render_pattern(notes, length / _beat_seconds(), Session.project.bpm)
+		_stream = NoteRenderer.render_pattern(notes, length / _beat_seconds(), Session.project.bpm, instrument, transpose, ref_pitch)
 		_rendered_from = made_from
 		_save_render()
 	return _stream
