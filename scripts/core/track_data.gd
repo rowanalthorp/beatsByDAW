@@ -51,3 +51,9 @@ func add_effect(effect: EffectData) -> void:
 func remove_effect(effect: EffectData) -> void:
 	effects.erase(effect)
 	effects_changed.emit()
+
+
+## replaces the whole effects list (undo uses it)
+func set_effects(new_effects: Array[EffectData]) -> void:
+	effects.assign(new_effects)
+	effects_changed.emit()

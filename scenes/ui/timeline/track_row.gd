@@ -74,7 +74,7 @@ func _on_pan_changed(value: float) -> void:
 
 
 func _on_delete_pressed() -> void:
-	Session.project.remove_track(track)
+	Session.remove_track(track)
 
 
 ## clicking empty lane space deselects the clip, selects this track and moves the playhead there
