@@ -53,7 +53,9 @@ func _show_tempo() -> void:
 
 ## typing in the box sets the song tempo. the ruler already redraws on project.changed so it follows on its own
 func _on_tempo_changed(value: float) -> void:
+	var before := Session.snapshot()
 	_project.bpm = value
+	Session.save_undo_step("Change Tempo", before, true) # true so holding the arrows is one step
 	# clicking the up/down arrows focuses the box too, so let go after those as well
 	%TempoSpin.get_line_edit().release_focus()
 

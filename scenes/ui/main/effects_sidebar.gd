@@ -83,4 +83,12 @@ func _show_effects() -> void:
 ## the menu items are named the same as the types in EffectData, so the item text is the type
 func _on_add_effect_id_pressed(id: int) -> void:
 	var popup: PopupMenu = %AddEffectButton.get_popup()
+	var before := Session.snapshot()
 	_track.add_effect(EffectData.create(popup.get_item_text(popup.get_item_index(id))))
+	Session.save_undo_step("Add Effect", before)
+
+
+func _on_remove_requested(effect: EffectData) -> void:
+	var before := Session.snapshot()
+	_track.remove_effect(effect)
+	Session.save_undo_step("Remove Effect", before)
