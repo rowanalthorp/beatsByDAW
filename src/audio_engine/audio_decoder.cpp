@@ -3,6 +3,7 @@
 AudioDecoder::AudioDecoder() = default;
 AudioDecoder::~AudioDecoder() { close(); }
 
+// NOTE: Current bug in the code is that if import a audio that has a filename with any non roman alphabet characters, the importing will fail. Not a blocker but just something to note
 bool AudioDecoder::load(
     const std::string &fp,
     ma_uint32 target_sample_rate,

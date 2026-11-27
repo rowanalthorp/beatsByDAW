@@ -24,6 +24,7 @@ driver/enable_input=true
 Session="*uid://d2nrdlncx2bir"
 Transport="*uid://u5dgeji016xk"
 Test="*uid://dkpf1bcknddk3"
+Playback="*uid://cdcuh7nnl20vw"
 
 [display]
 

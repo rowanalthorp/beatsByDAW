@@ -7,14 +7,15 @@ var _project: ProjectData # the project whose changed signal is connected
 func _ready() -> void:
 	Transport.position_changed.connect(_on_position_changed)
 	Transport.playing_changed.connect(_on_playing_changed)
-	_on_position_changed(Transport.position)
-	%TempoSpin.value_changed.connect(_on_tempo_changed)
 	Session.project_changed.connect(_on_project_changed)
-	_on_project_changed(Session.project)
-	%SnapCheck.toggled.connect(_on_snap_toggled)
-	Session.snap_to_beat = %SnapCheck.button_pressed # start matching however the box is set in the scene
+	%TempoSpin.value_changed.connect(_on_tempo_changed)
 	# enter in the tempo box drops focus, same as the track name box, so shortcuts work again
 	%TempoSpin.get_line_edit().text_submitted.connect(_on_tempo_submitted)
+	%SnapCheck.toggled.connect(_on_snap_toggled)
+
+	_on_position_changed(Transport.position)
+	_on_project_changed(Session.project)
+	Session.snap_to_beat = %SnapCheck.button_pressed # start matching however the box is set in the scene
 
 
 ## shows minutes:seconds.milliseconds, like 01:05.250.
@@ -45,6 +46,11 @@ func _on_project_changed(project: ProjectData) -> void:
 	_show_tempo()
 
 
+func _show_tempo() -> void:
+	# no_signal so filling in the box doesnt fire value_changed and set the bpm all over again
+	%TempoSpin.set_value_no_signal(_project.bpm)
+
+
 ## typing in the box sets the song tempo. the ruler already redraws on project.changed so it follows on its own
 func _on_tempo_changed(value: float) -> void:
 	_project.bpm = value
@@ -52,14 +58,9 @@ func _on_tempo_changed(value: float) -> void:
 	%TempoSpin.get_line_edit().release_focus()
 
 
-func _show_tempo() -> void:
-	# no_signal so filling in the box doesnt fire value_changed and set the bpm all over again
-	%TempoSpin.set_value_no_signal(_project.bpm)
+func _on_tempo_submitted(_text: String) -> void:
+	%TempoSpin.get_line_edit().release_focus()
 
 
 func _on_snap_toggled(on: bool) -> void:
 	Session.snap_to_beat = on
-
-
-func _on_tempo_submitted(_text: String) -> void:
-	%TempoSpin.get_line_edit().release_focus()

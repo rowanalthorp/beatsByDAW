@@ -9,12 +9,19 @@ var _project: ProjectData # the project whose track_removed is connected
 
 
 func _ready() -> void:
-	hide()
 	Session.effects_requested.connect(_on_effects_requested)
 	Session.project_changed.connect(_on_project_changed)
-	_on_project_changed(Session.project)
 	%CloseButton.pressed.connect(close)
 	%AddEffectButton.get_popup().id_pressed.connect(_on_add_effect_id_pressed)
+
+	hide() # closed until a track's Effects button opens it
+	_on_project_changed(Session.project)
+
+
+func close() -> void:
+	_set_track(null)
+	hide()
+
 
 func _on_effects_requested(track: TrackData) -> void:
 	# pressing Effects again on the track that's already showing closes it, like a toggle
@@ -23,11 +30,6 @@ func _on_effects_requested(track: TrackData) -> void:
 		return
 	_set_track(track)
 	show()
-
-
-func close() -> void:
-	_set_track(null)
-	hide()
 
 
 ## swaps which track the title follows. disconnect the old one first,
