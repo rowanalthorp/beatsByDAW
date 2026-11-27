@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://b03huwhfpdcyn" path="res://assets/icons/tool_bar/skip-back.svg" id="4_lyjna"]
 [ext_resource type="Texture2D" uid="uid://mk06jtbenyuh" path="res://assets/icons/tool_bar/skip-forward.svg" id="5_g2ni2"]
 [ext_resource type="Texture2D" uid="uid://ci1ae2fdloimh" path="res://assets/icons/tool_bar/record.svg" id="6_tck8x"]
-[ext_resource type="Script" uid="uid://bgnt7udgqpeti" path="res://scripts/core/record_button.gd" id="7_0ren3"]
+[ext_resource type="Script" uid="uid://bgnt7udgqpeti" path="res://scenes/ui/tool_bar/record_button.gd" id="7_0ren3"]
 [ext_resource type="Texture2D" uid="uid://iwte8dyufanc" path="res://assets/icons/tool_bar/repeat.svg" id="7_vfwye"]
 [ext_resource type="Texture2D" uid="uid://conkp0l5kbq6h" path="res://assets/icons/tool_bar/select.svg" id="8_8fwrc"]
 [ext_resource type="Texture2D" uid="uid://cc7dtwj6qflr0" path="res://assets/icons/tool_bar/split.svg" id="9_pvmn6"]
@@ -228,5 +228,3 @@ tooltip_text = "Export"
 theme_override_constants/icon_max_width = 25
 icon = ExtResource("20_ajbqv")
 icon_alignment = 1
-
-[connection signal="pressed" from="PlaybackGroup/Record" to="PlaybackGroup/Record" method="_on_pressed"]
