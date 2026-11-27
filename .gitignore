@@ -49,3 +49,4 @@ mir/.venv/
 __pycache__/
 
 cache/recordings/*.wav
+cache/recordings/*.wav.import

@@ -22,6 +22,10 @@ extends Resource
 	set(value):
 		offset = maxf(value, 0.0)
 		emit_changed()
+@export var audio_path: String = "":
+	set(value):
+		audio_path = value
+		emit_changed()
 
 var end: float:
 	get:
