@@ -7,7 +7,7 @@ var active := false
 var record_effect: AudioEffectRecord
 var mic_player: AudioStreamPlayer
 var recording_track: TrackData
-var recording_clip: ClipData
+var recording_clip: AudioClipData
 var recording_started_at_usec := 0
 var message_dialog: AcceptDialog
 var default_modulate: Color
@@ -29,7 +29,7 @@ func _on_pressed() -> void:
 		return
 
 	recording_track = track
-	recording_clip = ClipData.new()
+	recording_clip = AudioClipData.new()
 	recording_clip.name = "Recording"
 	recording_clip.start = Transport.position
 	recording_clip.length = 0.01
@@ -86,7 +86,7 @@ func _stop_recording() -> void:
 		print("Could not save microphone recording: %s" % error_string(save_result))
 		return
 
-	recording_clip.audio_path = recording_path
+	recording_clip.file_path = ProjectSettings.globalize_path(recording_path)
 	recording_clip.name = "Microphone Recording"
 	recording_clip.length = maxf(recording.get_length(), 0.01)
 	Session.song_length_changed.emit()
