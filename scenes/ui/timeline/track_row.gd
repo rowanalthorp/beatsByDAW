@@ -38,7 +38,6 @@ func setup(new_track: TrackData) -> void:
 	track.clip_removed.connect(_on_clip_removed)
 	track.clip_added.connect(_add_clip_view) # split, paste and duplicate (and later import) add clips to this track
 
-
 func _add_clip_view(clip: ClipData) -> void:
 	var view := CLIP_VIEW_SCENE.instantiate() as ClipView
 	%Lane.add_child(view)

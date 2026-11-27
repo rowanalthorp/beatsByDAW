@@ -44,8 +44,7 @@ func _set_track(track: TrackData) -> void:
 		_track.effects_changed.connect(_show_effects) # added/removed an effect
 		_show_name()
 	_show_effects() # outside the if so closing (null) clears the slots too
-
-
+	
 func _show_name() -> void:
 	%TrackName.text = "Effects: %s" % _track.name
 

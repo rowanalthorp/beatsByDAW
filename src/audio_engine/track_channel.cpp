@@ -52,4 +52,4 @@ bool TrackChannel::is_finished() const {
     });
 }
 
-void TrackChannel::set_volume(float value) { volume = std::clamp(value, 0.0f, 1.0f);}
+void TrackChannel::set_volume(float value) { volume = std::clamp(value, 0.0f, 2.0f); }
