@@ -9,11 +9,13 @@
 using namespace godot;
 
 void PianoRenderer::_bind_methods() {
-    ClassDB::bind_static_method("PianoRenderer", D_METHOD("render_note", "pitch", "velocity", "duration_seconds", "sample_rate"), &PianoRenderer::render_note);
-    ClassDB::bind_static_method("PianoRenderer", D_METHOD("render_pattern", "notes", "length_beats", "bpm", "sample_rate"), &PianoRenderer::render_pattern);
+    ClassDB::bind_static_method("PianoRenderer", D_METHOD("render_note", "pitch", "velocity", "duration_seconds", "sample_rate", "transpose", "ref_pitch"), &PianoRenderer::render_note, DEFVAL(0), DEFVAL(440.0));
+    ClassDB::bind_static_method("PianoRenderer", D_METHOD("render_pattern", "notes", "length_beats", "bpm", "sample_rate", "transpose", "ref_pitch"), &PianoRenderer::render_pattern, DEFVAL(0), DEFVAL(440.0));
 }
 
 namespace {
+    // sinusoidal additive model, harmonics with per partial exponential decay
+    // as per Smith's "Spectral Audio Signal Processing"
     constexpr int PARTIAL_COUNT =  5;
     // Same table used in GDScript: harminic ratio, amp, decay, factor
     constexpr double PARTIALS[PARTIAL_COUNT][3] = {
@@ -39,13 +41,14 @@ namespace {
     bool dead = false;
     };
 
-    Voice make_voice(int pitch, double velocity, double dt) {
+    Voice make_voice(int pitch, double velocity, double dt, int transpose, double ref_pitch) {
         Voice v;
-        v.freq = 440.0 * Math::pow(2.0, (pitch - 69) / 12.0);
+        double sounded = pitch + transpose;
+        v.freq = ref_pitch * Math::pow(2.0, (sounded - 69) / 12.0);
         v.vel = velocity;
-        double tau = Math::lerp(2.4, 0.5, Math::inverse_lerp(21.0, 108.0, (double)pitch));
+        double tau = Math::lerp(2.4, 0.5, Math::inverse_lerp(21.0, 108.0, sounded));
         for (int j = 0; j < PARTIAL_COUNT; j++) {
-            v.amps[j] = PARTIALS[j][1];           // vel NOT baked in — applied at output
+            v.amps[j] = PARTIALS[j][1];
             v.decays[j] = std::exp(-dt / (tau * PARTIALS[j][2]));
         }
         return v;
@@ -56,25 +59,27 @@ namespace {
         double env = Math::min(v.t / ATTACK, 1.0);
         if (v.releasing) {
             v.rel_t += dt;
-            env *= std::exp(-v.rel_t / RELEASE);   // exponential tail, not linear
+            // exponential tail, not linear
+            env *= std::exp(-v.rel_t / RELEASE);
             if (env < 0.001) v.dead = true;
         }
         if (v.t > MAX_VOICE_AGE) v.dead = true;
         double s = 0.0;
         for (int j = 0; j < PARTIAL_COUNT; j++) {
-            v.amps[j] *= v.decays[j];              // decay BEFORE use
+            // decay BEFORE use
+            v.amps[j] *= v.decays[j];
             s += v.amps[j] * std::sin(Math::TAU * v.freq * PARTIALS[j][0] * v.t);
         }
         return s * env * v.vel * MASTER_GAIN;
     }
 }
 
-PackedByteArray PianoRenderer::render_note(int pitch, double velocity, double duration_seconds, int sample_rate) {
+PackedByteArray PianoRenderer::render_note(int pitch, double velocity, double duration_seconds, int sample_rate, int transpose, double ref_pitch) {
     double dt = 1.0 / sample_rate;
     double release_seconds = RELEASE * std::log(1000.0);
     int held_samples = std::max(1, (int)Math::round(duration_seconds * sample_rate));
     int total_samples = held_samples + (int)Math::ceil(release_seconds * sample_rate);
-    Voice voice = make_voice(pitch, velocity, dt);
+    Voice voice = make_voice(pitch, velocity, dt, transpose, ref_pitch);
     PackedByteArray data;
     data.resize(total_samples * 2);
     for (int i = 0; i < total_samples; i++) {
@@ -85,7 +90,7 @@ PackedByteArray PianoRenderer::render_note(int pitch, double velocity, double du
     return data;
 }
 
-PackedByteArray PianoRenderer::render_pattern(Array notes, double length_beats, double bpm, int sample_rate) {
+PackedByteArray PianoRenderer::render_pattern(Array notes, double length_beats, double bpm, int sample_rate, int transpose, double ref_pitch) {
     double dt = 1.0 / sample_rate;
     double seconds_per_beat = 60.0 / bpm;
     double release_seconds = RELEASE * std::log(1000.0);
@@ -96,7 +101,7 @@ PackedByteArray PianoRenderer::render_pattern(Array notes, double length_beats, 
         Dictionary note = notes[i];
         int64_t start = (int64_t)Math::round((double)note["start"] * seconds_per_beat * sample_rate);
         int64_t held = std::max<int64_t>(1, (int64_t)Math::round((double)note["length"] * seconds_per_beat * sample_rate));
-        scheduled.push_back({start, start + held, make_voice((int)note["pitch"], (double)note["velocity"], dt)});
+        scheduled.push_back({start, start + held, make_voice((int)note["pitch"], (double)note["velocity"], dt, transpose, ref_pitch)});
     }
 
     int64_t pattern_samples = std::max<int64_t>(1, (int64_t)Math::round(length_beats * seconds_per_beat * sample_rate));
