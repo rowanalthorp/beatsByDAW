@@ -14,7 +14,7 @@ var _pitch_cache: Dictionary = {}
 var _preview_players: Dictionary = {}
 const PREVIEW_SECONDS := 4.0
 
-# the song's real project instead of a private one, 
+# the song's real project instead of a private one,
 # so the tempo matches the main window
 var _project: ProjectData:
 	get:
@@ -79,15 +79,15 @@ func _toggle_play() -> void:
 		var transpose: int = _clip.transpose if _clip != null else 0
 		var ref_pitch: float = _clip.ref_pitch if _clip != null else 440.0
 		var wav := NoteRenderer.render_pattern(_roll.notes, pattern_beats, _project.bpm, instrument, transpose, ref_pitch)
-		
+
 		if _clip != null and _clip.notes_dirty:
 			DirAccess.make_dir_recursive_absolute("user://renders")
 			var path := "user://renders/%d.wav" % _clip.get_instance_id()
 			if wav.save_to_wav(path) == OK:
 				_clip.wav_path = ProjectSettings.globalize_path(path)
 				_clip.notes_dirty = false
-		
-		# only loop the pattern end not the buffer, 
+
+		# only loop the pattern end not the buffer,
 		# so release doesn't add a gap to each repetition
 		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
 		wav.loop_end = roundi(pattern_beats * seconds_per_beat * wav.mix_rate)
