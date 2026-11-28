@@ -24,6 +24,11 @@ var _project: ProjectData:
 @onready var _play_button: Button = $VBox/Toolbar/PlayButton
 @onready var _bpm_spin: SpinBox = $VBox/Toolbar/BpmSpin
 @onready var _clear_button: Button = $VBox/Toolbar/ClearButton
+@onready var _instrument_picker: OptionButton = $VBox/Toolbar/InstrumentPicker
+@onready var _transpose_spin: SpinBox = $VBox/TuneBar/TransposeSpin
+@onready var _ref_pitch_spin: SpinBox = $VBox/TuneBar/RefPitchSpin
+@onready var _key_picker: OptionButton = $VBox/TuneBar/KeyPicker
+@onready var _scale_picker: OptionButton = $VBox/TuneBar/ScalePicker
 
 func _mark_clip_dirty() -> void:
 	if _clip != null:
@@ -33,6 +38,21 @@ func _ready() -> void:
 	close_requested.connect(_on_close_requested)
 
 	_roll.notes_changed.connect(_mark_clip_dirty)
+
+	_instrument_picker.add_item("Piano")
+	_instrument_picker.add_item("Guitar")
+	_instrument_picker.add_item("Drums")
+	_instrument_picker.item_selected.connect(_on_instrument_selected)
+	_transpose_spin.value_changed.connect(_on_tuning_changed)
+	_ref_pitch_spin.value_changed.connect(_on_tuning_changed)
+
+	for key_name in ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]:
+		_key_picker.add_item(key_name)
+	_key_picker.item_selected.connect(_on_key_selected)
+	_scale_picker.add_item("None")
+	_scale_picker.add_item("Major")
+	_scale_picker.add_item("Minor")
+	_scale_picker.item_selected.connect(_on_scale_selected)
 
 	# Rendered playback
 	_stream_player = AudioStreamPlayer.new()
@@ -55,7 +75,10 @@ func _toggle_play() -> void:
 	if _playing:
 		var pattern_beats := float(_roll.bars * _roll.beats_per_bar)
 		var seconds_per_beat := 60.0 / _project.bpm
-		var wav := NoteRenderer.render_pattern(_roll.notes, pattern_beats, _project.bpm)
+		var instrument := _clip.instrument if _clip != null else "piano"
+		var transpose: int = _clip.transpose if _clip != null else 0
+		var ref_pitch: float = _clip.ref_pitch if _clip != null else 440.0
+		var wav := NoteRenderer.render_pattern(_roll.notes, pattern_beats, _project.bpm, instrument, transpose, ref_pitch)
 		
 		if _clip != null and _clip.notes_dirty:
 			DirAccess.make_dir_recursive_absolute("user://renders")
@@ -96,6 +119,15 @@ func _process(_delta: float) -> void:
 ## so every note placed, moved or deleted is saved straight into the clip
 func open_clip(clip: NoteClipData) -> void:
 	_clip = clip
+	_roll.drum_mode = clip.instrument == "drums"
+	_instrument_picker.select(["piano", "guitar", "drums"].find(clip.instrument))
+	_transpose_spin.set_value_no_signal(clip.transpose)
+	_ref_pitch_spin.set_value_no_signal(clip.ref_pitch)
+	_key_picker.select(clampi(clip.scale_root, 0, 11))
+	_scale_picker.select({"none": 0, "major": 1, "minor": 2}.get(clip.scale_type, 0))
+	_roll.scale_root = clip.scale_root
+	_roll.scale_type = clip.scale_type
+	_update_tuning_enabled()
 	if _playing:
 		_toggle_play()
 	title = "Piano Roll - " + clip.name
@@ -107,7 +139,9 @@ func open_clip(clip: NoteClipData) -> void:
 	_bpm_spin.set_value_no_signal(_project.bpm) # tempo may have changed in the bottom bar since last open
 	_roll.queue_redraw()
 	# size the window to fit the toolbar and the clip's bars, so theres no empty grey past the last bar
-	var toolbar_width: float = $VBox/Toolbar.get_combined_minimum_size().x
+	var toolbar_width: float = maxf(
+		$VBox/Toolbar.get_combined_minimum_size().x,
+		$VBox/TuneBar.get_combined_minimum_size().x)
 	var roll_width := _roll.custom_minimum_size.x + 16.0 # + room for the vertical scroll bar
 	var wanted := Vector2i(int(maxf(toolbar_width, roll_width)), 660)
 	# clamped version shrinks it to at most 85% of the main window if it doesnt fit,
@@ -115,16 +149,68 @@ func open_clip(clip: NoteClipData) -> void:
 	popup_centered_clamped(wanted, 0.85)
 
 func _preview_note_on(pitch: int, velocity: float = 1.0) -> void:
-	if not _pitch_cache.has(pitch):
-		_pitch_cache[pitch] = NoteRenderer.render_note(pitch, velocity, PREVIEW_SECONDS)
+	var instrument: String = _clip.instrument if _clip != null else "piano"
+	var transpose: int = _clip.transpose if _clip != null else 0
+	var ref_pitch: float = _clip.ref_pitch if _clip != null else 440.0
+	var cache_key := "%s:%d" % [instrument, pitch]
+	if not _pitch_cache.has(cache_key):
+		_pitch_cache[cache_key] = NoteRenderer.render_note(pitch, 1.0, PREVIEW_SECONDS, instrument, transpose, ref_pitch)
 	if not _preview_players.has(pitch):
 		var player := AudioStreamPlayer.new()
 		add_child(player)
 		_preview_players[pitch] = player
 	var player: AudioStreamPlayer = _preview_players[pitch]
-	player.stream = _pitch_cache[pitch]
+	player.stream = _pitch_cache[cache_key]
+	player.volume_db = linear_to_db(clampf(velocity, 0.0001, 1.0))
 	player.play()
 
 func _preview_note_off(pitch: int) -> void:
 	if _preview_players.has(pitch):
 		_preview_players[pitch].stop()
+
+func _on_instrument_selected(index: int) -> void:
+	if _clip == null:
+		return
+	if _playing:
+		_toggle_play()
+	for player in _preview_players.values():
+		player.stop()
+	_clip.instrument = ["piano", "guitar", "drums"][index]
+	_roll.drum_mode = _clip.instrument == "drums"
+	_update_tuning_enabled()
+	_mark_clip_dirty()
+
+## drums pick voices by pitch, not frequency
+func _update_tuning_enabled() -> void:
+	var pitched := _clip != null and _clip.instrument != "drums"
+	_transpose_spin.editable = pitched
+	_ref_pitch_spin.editable = pitched
+	_key_picker.disabled = not pitched
+	_scale_picker.disabled = not pitched
+
+## edit-time only. the scale constrains placement, it doesn't change the stored notes
+func _on_key_selected(index: int) -> void:
+	if _clip == null:
+		return
+	_clip.scale_root = index
+	_roll.scale_root = index
+	_roll.queue_redraw()
+
+func _on_scale_selected(index: int) -> void:
+	if _clip == null:
+		return
+	_clip.scale_type = ["none", "major", "minor"][index]
+	_roll.scale_type = _clip.scale_type
+
+## tuning changed, cached previews and the exported wav are stale now
+func _on_tuning_changed(_value: float) -> void:
+	if _clip == null:
+		return
+	if _playing:
+		_toggle_play()
+	for player in _preview_players.values():
+		player.stop()
+	_pitch_cache.clear()
+	_clip.transpose = int(_transpose_spin.value)
+	_clip.ref_pitch = _ref_pitch_spin.value
+	_mark_clip_dirty()

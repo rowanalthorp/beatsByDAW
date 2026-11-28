@@ -33,17 +33,39 @@ var _preview_pitch := -1
 var _resize_note := -1
 var _move_note := -1
 var _grab_beat_offset := 0.0
-var _grab_pitch_offset := 0
 
+## Drum lanes to match the current drum sounds
+# hihat, snare and kick
+const DRUM_LANES: Array[int] = [42, 38, 36]
+const DRUM_NAMES: Array[String] = ["Hihat", "Snare", "Kick"]
+const DRUM_ROW_HEIGHT := 64.0
+ 
+var drum_mode := false:
+	set(value):
+		drum_mode = value
+		_refresh_size()
+
+## scale tones as pitch-class offsets from the root. placed and dragged pitches
+## snap to these when scale_type names one
+const SCALES := {
+	"major": [0, 2, 4, 5, 7, 9, 11],
+	"minor": [0, 2, 3, 5, 7, 8, 10],
+}
+var scale_root := 0   # pitch class, 0 = C
+var scale_type := "none":
+	set(value):
+		scale_type = value
+		queue_redraw()
 
 func _ready() -> void:
 	_refresh_size()
 
 
 func _refresh_size() -> void:
+	var rows := DRUM_LANES.size() if drum_mode else PITCH_HIGH - PITCH_LOW + 1
 	custom_minimum_size = Vector2(
 		KEY_WIDTH + bars * beats_per_bar * BEAT_WIDTH,
-		(PITCH_HIGH - PITCH_LOW + 1) * ROW_HEIGHT
+		rows * _row_h()
 	)
 	queue_redraw()
 
@@ -66,18 +88,16 @@ func _gui_input(event: InputEvent) -> void:
 				return
 			var idx := _note_at(pos)
 			if idx == -1:
-				idx = _add_note(_beat_at(pos.x), _pitch_at(pos.y))
+				idx = _add_note(_beat_at(pos.x), _snap_pitch(_pitch_at(pos.y)))
 				notes_changed.emit()
 				_move_note = idx
 				_grab_beat_offset = _beat_at(pos.x) - notes[idx].start
-				_grab_pitch_offset = 0
 				queue_redraw()
 			elif _near_right_edge(notes[idx], pos.x):
 				_resize_note = idx
 			else:
 				_move_note = idx
 				_grab_beat_offset = _beat_at(pos.x) - notes[idx].start
-				_grab_pitch_offset = notes[idx].pitch - _pitch_at(pos.y)
 			preview_note_on.emit(notes[idx].pitch)
 		elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
 			accept_event()
@@ -128,8 +148,8 @@ func _input(event: InputEvent) -> void:
 			var n := notes[_move_note]
 			n.start = _snap_floor(_beat_at(pos.x) - _grab_beat_offset)
 			n.start = minf(n.start, bars * beats_per_bar - n.length)
-			n.pitch = clampi(
-				_pitch_at(pos.y) + _grab_pitch_offset, PITCH_LOW, PITCH_HIGH)
+			# _snap_pitch no-ops in drum mode, so both modes land here
+			n.pitch = _snap_pitch(_pitch_at(pos.y))
 			queue_redraw()
 		elif _preview_pitch != -1 and pos.x < KEY_WIDTH:
 			var p := _pitch_at(pos.y)
@@ -141,22 +161,24 @@ func _input(event: InputEvent) -> void:
 
 func _draw() -> void:
 	var grid_w := bars * beats_per_bar * BEAT_WIDTH
-	var rows := PITCH_HIGH - PITCH_LOW + 1
-	var h := rows * ROW_HEIGHT
+	var rows := DRUM_LANES.size() if drum_mode else PITCH_HIGH - PITCH_LOW + 1
+	var h := rows * _row_h()
 	var font := get_theme_default_font()
 
 	# Grid background, black-key rows shaded darker.
 	draw_rect(Rect2(0, 0, KEY_WIDTH + grid_w, h), Color(0.13, 0.13, 0.16))
-	for pitch in range(PITCH_LOW, PITCH_HIGH + 1):
-		if _is_black(pitch):
-			draw_rect(
-				Rect2(KEY_WIDTH, _y_of(pitch), grid_w, ROW_HEIGHT),
-				Color(0.0, 0.0, 0.0, 0.22))
-
+	if not drum_mode:
+		for pitch in range(PITCH_LOW, PITCH_HIGH + 1):
+			var out: bool = not _in_scale(pitch) if SCALES.has(scale_type) else _is_black(pitch)
+			if out:
+				draw_rect(
+					Rect2(KEY_WIDTH, _y_of(pitch), grid_w, ROW_HEIGHT),
+					Color(0.0, 0.0, 0.0, 0.22))
 	# Row separators, stronger line at the top of the C row.
+	
 	for r in range(rows + 1):
-		var y := r * ROW_HEIGHT
-		var strong := r > 0 and (PITCH_HIGH - r) % 12 == 0
+		var y := r * _row_h()
+		var strong := not drum_mode and r > 0 and (PITCH_HIGH - r) % 12 == 0
 		draw_line(
 			Vector2(0, y), Vector2(KEY_WIDTH + grid_w, y),
 			Color(1, 1, 1, 0.22 if strong else 0.07))
@@ -176,20 +198,30 @@ func _draw() -> void:
 				font, Vector2(x + 4, 12), "Bar %d" % (b / beats_per_bar + 1),
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.5))
 
-	# Keyboard column
-	for pitch in range(PITCH_LOW, PITCH_HIGH + 1):
-		var y := _y_of(pitch)
-		if _is_black(pitch):
-			draw_rect(Rect2(0, y, KEY_WIDTH, ROW_HEIGHT), Color(0.1, 0.1, 0.12))
-		else:
-			draw_rect(Rect2(0, y, KEY_WIDTH, ROW_HEIGHT), Color(0.85, 0.85, 0.88))
-			if pitch % 12 == 0:
-				draw_string(
-					font, Vector2(6, y + ROW_HEIGHT - 3.0), "C%d" % (pitch / 12 - 1),
-					HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.25, 0.25, 0.3))
-		draw_line(
-			Vector2(0, y + ROW_HEIGHT), Vector2(KEY_WIDTH, y + ROW_HEIGHT),
-			Color(0, 0, 0, 0.35))
+	# Keyboard or drum columns
+	if drum_mode:
+		for i in DRUM_LANES.size():
+			var y := i * DRUM_ROW_HEIGHT
+			draw_rect(Rect2(0, y, KEY_WIDTH, DRUM_ROW_HEIGHT), Color(0.2, 0.2, 0.24))
+			draw_string(font, Vector2(6, y + DRUM_ROW_HEIGHT - 3.0), DRUM_NAMES[i],
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.9, 0.9, 0.9))
+			draw_line(
+				Vector2(0, y + DRUM_ROW_HEIGHT), Vector2(KEY_WIDTH, y + DRUM_ROW_HEIGHT),
+				Color(0, 0, 0, 0.35))
+	else:
+		for pitch in range(PITCH_LOW, PITCH_HIGH + 1):
+			var y := _y_of(pitch)
+			if _is_black(pitch):
+				draw_rect(Rect2(0, y, KEY_WIDTH, ROW_HEIGHT), Color(0.1, 0.1, 0.12))
+			else:
+				draw_rect(Rect2(0, y, KEY_WIDTH, ROW_HEIGHT), Color(0.85, 0.85, 0.88))
+				if pitch % 12 == 0:
+					draw_string(
+						font, Vector2(6, y + ROW_HEIGHT - 3.0), "C%d" % (pitch / 12 - 1),
+						HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.25, 0.25, 0.3))
+			draw_line(
+				Vector2(0, y + ROW_HEIGHT), Vector2(KEY_WIDTH, y + ROW_HEIGHT),
+				Color(0, 0, 0, 0.35))
 	draw_line(Vector2(KEY_WIDTH, 0), Vector2(KEY_WIDTH, h), Color(0, 0, 0, 0.6))
 
 	for i in notes.size():
@@ -205,15 +237,51 @@ func _draw() -> void:
 		draw_line(Vector2(x, 0), Vector2(x, h), Color(1.0, 0.35, 0.35), 2.0)
 
 
+## drum lanes are drawn taller than piano rows
+func _row_h() -> float:
+	return DRUM_ROW_HEIGHT if drum_mode else ROW_HEIGHT
+
+
 func _is_black(pitch: int) -> bool:
 	return pitch % 12 in BLACK_PITCHES
 
 
+## drums and "none" treat every pitch as in-scale
+func _in_scale(pitch: int) -> bool:
+	if drum_mode or not SCALES.has(scale_type):
+		return true
+	return SCALES[scale_type].has(posmod(pitch - scale_root, 12))
+
+
+## nearest scale tone, preferring the lower pitch on ties
+func _snap_pitch(pitch: int) -> int:
+	for step in range(0, 6):
+		if _in_scale(pitch - step):
+			return clampi(pitch - step, PITCH_LOW, PITCH_HIGH)
+		if _in_scale(pitch + step):
+			return clampi(pitch + step, PITCH_LOW, PITCH_HIGH)
+	return clampi(pitch, PITCH_LOW, PITCH_HIGH)
+
+## nearest lane for pitches that don't match one exactly
+func _lane_of(pitch: int) -> int:
+	var best := 0
+	var best_dist := 1000000
+	for i in DRUM_LANES.size():
+		var d := absi(pitch - DRUM_LANES[i])
+		if d < best_dist:
+			best = i
+			best_dist = d
+	return best
+
 func _y_of(pitch: int) -> float:
+	if drum_mode:
+		return _lane_of(pitch) * DRUM_ROW_HEIGHT
 	return (PITCH_HIGH - pitch) * ROW_HEIGHT
 
 
 func _pitch_at(y: float) -> int:
+	if drum_mode:
+		return DRUM_LANES[clampi(int(y / DRUM_ROW_HEIGHT), 0, DRUM_LANES.size() - 1)]
 	return clampi(PITCH_HIGH - int(y / ROW_HEIGHT), PITCH_LOW, PITCH_HIGH)
 
 
@@ -252,5 +320,5 @@ func _note_rect(n: Dictionary) -> Rect2:
 		KEY_WIDTH + n.start * BEAT_WIDTH,
 		_y_of(n.pitch) + 1.0,
 		n.length * BEAT_WIDTH - 1.0,
-		ROW_HEIGHT - 2.0
+		_row_h() - 2.0
 	)
