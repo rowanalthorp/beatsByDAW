@@ -140,6 +140,7 @@ icon_alignment = 1
 expand_icon = true
 
 [node name="Undo" type="Button" parent="EditGroup" unique_id=1468919931]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 23)
 layout_mode = 2
 tooltip_text = "Undo"
@@ -148,6 +149,7 @@ icon_alignment = 1
 expand_icon = true
 
 [node name="Redo" type="Button" parent="EditGroup" unique_id=2006490615]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(23, 0)
 layout_mode = 2
 tooltip_text = "Redo"
