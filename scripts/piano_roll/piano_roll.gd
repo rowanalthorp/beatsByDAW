@@ -88,7 +88,10 @@ func _gui_input(event: InputEvent) -> void:
 				return
 			var idx := _note_at(pos)
 			if idx == -1:
-				idx = _add_note(_beat_at(pos.x), _snap_pitch(_pitch_at(pos.y)))
+				var pitch := _pitch_at(pos.y)
+				if not _in_scale(pitch):
+					return # out of key row, nothing gets placed
+				idx = _add_note(_beat_at(pos.x), pitch)
 				notes_changed.emit()
 				_move_note = idx
 				_grab_beat_offset = _beat_at(pos.x) - notes[idx].start
