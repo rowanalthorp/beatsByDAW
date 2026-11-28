@@ -29,6 +29,10 @@ var notes: Array[Dictionary] = []
 var show_playhead := false
 var playhead_beat := 0.0
 
+## how much of the grid the clip actually owns, in beats. 0 = the whole grid.
+## past this the grid is shaded dead space, so a clip shorter than a bar shows its real size
+var usable_beats := 0.0
+
 var _preview_pitch := -1
 var _resize_note := -1
 var _move_note := -1
@@ -59,14 +63,20 @@ var scale_type := "none":
 
 func _ready() -> void:
 	_refresh_size()
+	# the scroll container never stretches us past our minimum, so the grid has to
+	# claim the viewport itself when the window is bigger than the content
+	if get_parent() is ScrollContainer:
+		get_parent().resized.connect(_refresh_size)
 
 
 func _refresh_size() -> void:
 	var rows := DRUM_LANES.size() if drum_mode else PITCH_HIGH - PITCH_LOW + 1
-	custom_minimum_size = Vector2(
+	var grid := Vector2(
 		KEY_WIDTH + bars * beats_per_bar * BEAT_WIDTH,
 		rows * _row_h()
 	)
+	var view: Vector2 = get_parent().size if get_parent() is ScrollContainer else Vector2.ZERO
+	custom_minimum_size = grid.max(view)
 	queue_redraw()
 
 
@@ -85,6 +95,11 @@ func _gui_input(event: InputEvent) -> void:
 			if pos.x < KEY_WIDTH:
 				_preview_pitch = _pitch_at(pos.y)
 				preview_note_on.emit(_preview_pitch)
+				return
+			# dead space can't take notes: past the clip's end, or below the drum lanes
+			if pos.x >= KEY_WIDTH + _limit_beats() * BEAT_WIDTH:
+				return
+			if drum_mode and pos.y >= DRUM_LANES.size() * DRUM_ROW_HEIGHT:
 				return
 			var idx := _note_at(pos)
 			if idx == -1:
@@ -138,8 +153,8 @@ func _input(event: InputEvent) -> void:
 				return
 			var n := notes[_resize_note]
 			var end := clampf(
-				snappedf(_beat_at(pos.x), SNAP), 0.0, float(bars * beats_per_bar))
-			n.length = clampf(end - n.start, SNAP, bars * beats_per_bar - n.start)
+				snappedf(_beat_at(pos.x), SNAP), 0.0, _limit_beats())
+			n.length = clampf(end - n.start, SNAP, _limit_beats() - n.start)
 			queue_redraw()
 		elif _move_note != -1:
 			if _move_note >= notes.size():
@@ -147,7 +162,7 @@ func _input(event: InputEvent) -> void:
 				return
 			var n := notes[_move_note]
 			n.start = _snap_floor(_beat_at(pos.x) - _grab_beat_offset)
-			n.start = minf(n.start, bars * beats_per_bar - n.length)
+			n.start = minf(n.start, _limit_beats() - n.length)
 			# _snap_pitch no-ops in drum mode, so both modes land here
 			n.pitch = _snap_pitch(_pitch_at(pos.y))
 			queue_redraw()
@@ -160,9 +175,11 @@ func _input(event: InputEvent) -> void:
 
 
 func _draw() -> void:
-	var grid_w := bars * beats_per_bar * BEAT_WIDTH
+	# grid fills whatever space the control gets, so a resized window shows shaded dead
+	# space instead of grey
+	var grid_w := maxf(bars * beats_per_bar * BEAT_WIDTH, size.x - KEY_WIDTH)
 	var rows := DRUM_LANES.size() if drum_mode else PITCH_HIGH - PITCH_LOW + 1
-	var h := rows * _row_h()
+	var h := maxf(rows * _row_h(), size.y)
 	var font := get_theme_default_font()
 
 	# Grid background, black-key rows shaded darker.
@@ -197,6 +214,15 @@ func _draw() -> void:
 			draw_string(
 				font, Vector2(x + 4, 12), "Bar %d" % (b / beats_per_bar + 1),
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.5))
+
+	# dead space: everything past the clip's length, and below the last row
+	draw_rect(
+		Rect2(KEY_WIDTH + _limit_beats() * BEAT_WIDTH, 0,
+			grid_w - _limit_beats() * BEAT_WIDTH, h),
+		Color(0, 0, 0, 0.35))
+	var rows_h := rows * _row_h()
+	if h > rows_h:
+		draw_rect(Rect2(0, rows_h, KEY_WIDTH + grid_w, h - rows_h), Color(0, 0, 0, 0.35))
 
 	# Keyboard or drum columns
 	if drum_mode:
@@ -240,6 +266,11 @@ func _draw() -> void:
 ## drum lanes are drawn taller than piano rows
 func _row_h() -> float:
 	return DRUM_ROW_HEIGHT if drum_mode else ROW_HEIGHT
+
+
+## beat limit for placing and resizing notes — the clip's length, or the whole grid when unset
+func _limit_beats() -> float:
+	return usable_beats if usable_beats > 0.0 else float(bars * beats_per_bar)
 
 
 func _is_black(pitch: int) -> bool:
@@ -286,11 +317,11 @@ func _pitch_at(y: float) -> int:
 
 
 func _beat_at(x: float) -> float:
-	return clampf((x - KEY_WIDTH) / BEAT_WIDTH, 0.0, float(bars * beats_per_bar))
+	return clampf((x - KEY_WIDTH) / BEAT_WIDTH, 0.0, _limit_beats())
 
 
 func _snap_floor(b: float) -> float:
-	return clampf(floor(b / SNAP) * SNAP, 0.0, float(bars * beats_per_bar))
+	return clampf(floor(b / SNAP) * SNAP, 0.0, _limit_beats())
 
 
 func _near_right_edge(n: Dictionary, x: float) -> bool:
