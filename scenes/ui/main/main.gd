@@ -1,7 +1,7 @@
 extends Control
 
 enum FileMenuId { NEW, OPEN, SAVE, IMPORT_AUDIO, EXPORT }
-# enum since we will prob get more entries with zooming in, out, and expanding
+enum EditMenuId { UNDO, REDO, CUT, COPY, PASTE }
 enum ViewMenuId { LIGHT_THEME, RULER_SECONDS }
 
 const MIN_WINDOW_SIZE := Vector2i(1024, 576)
@@ -10,7 +10,8 @@ const SHORTCUT_ACTIONS: Array[StringName] = [
 	&"play_pause", &"go_to_start", &"go_to_end",
 	&"delete_selected", &"zoom_in", &"zoom_out",
 	&"zoom_fit", &"split", &"copy", &"cut", &"paste",
-	&"duplicate"
+	&"duplicate",
+	&"redo", &"undo" # redo first, or ctrl+shift+z gets caught as ctrl+z
 ]
 const PIANO_ROLL_WINDOW := preload("res://scenes/piano_roll/piano_roll_window.tscn")
 
@@ -27,10 +28,13 @@ func _ready() -> void:
 	Session.open_clip_requested.connect(_on_open_clip_requested)
 	Session.import_requested.connect(_on_import_requested)
 	%File.id_pressed.connect(_on_file_menu_id_pressed)
+	%Edit.id_pressed.connect(_on_edit_menu_id_pressed)
+	Session.history.version_changed.connect(_update_edit_menu) # an edit, undo or redo happened
 	%View.id_pressed.connect(_on_view_menu_id_pressed)
 	%Tracks.id_pressed.connect(_on_add_track_id_pressed)
 
 	Session.open_project(DemoProject.create())
+	_update_edit_menu() # greyed out to start with, nothing to undo yet
 
 
 ## runs whenever any input is pressed
@@ -78,6 +82,10 @@ func _on_shortcut(action: StringName) -> void:
 			Session.paste()
 		&"duplicate":
 			Session.duplicate_selected()
+		&"undo":
+			Session.undo()
+		&"redo":
+			Session.redo()
 		_:
 			print("Shortcut: ", action) # catch everything with no handler
 
@@ -87,6 +95,33 @@ func _on_file_menu_id_pressed(id: int) -> void:
 	match id:
 		FileMenuId.IMPORT_AUDIO:
 			Session.request_import()
+
+
+func _on_edit_menu_id_pressed(id: int) -> void:
+	match id:
+		EditMenuId.UNDO:
+			Session.undo()
+		EditMenuId.REDO:
+			Session.redo()
+		EditMenuId.CUT:
+			Session.cut_selected()
+		EditMenuId.COPY:
+			Session.copy_selected()
+		EditMenuId.PASTE:
+			Session.paste()
+
+
+## undo/redo say what they'll undo/redo, like "Undo Move Clip", and grey out when there's nothing to
+func _update_edit_menu() -> void:
+	var edit_menu: PopupMenu = %Edit
+	var history := Session.history
+	var undo_index := edit_menu.get_item_index(EditMenuId.UNDO)
+	var redo_index := edit_menu.get_item_index(EditMenuId.REDO)
+	edit_menu.set_item_disabled(undo_index, not history.has_undo())
+	edit_menu.set_item_disabled(redo_index, not history.has_redo())
+	edit_menu.set_item_text(undo_index, "Undo " + history.get_current_action_name() if history.has_undo() else "Undo")
+	# the step redo would bring back is the one right after the current one
+	edit_menu.set_item_text(redo_index, "Redo " + history.get_action_name(history.get_current_action() + 1) if history.has_redo() else "Redo")
 
 
 func _on_view_menu_id_pressed(id: int) -> void:

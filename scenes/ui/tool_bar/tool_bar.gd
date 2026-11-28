@@ -18,12 +18,27 @@ func _ready() -> void:
 	%Copy.pressed.connect(Session.copy_selected)
 	%Paste.pressed.connect(Session.paste)
 
+	%Undo.pressed.connect(Session.undo)
+	%Redo.pressed.connect(Session.redo)
+	Session.history.version_changed.connect(_update_undo_buttons)
+
 	%ZoomIn.pressed.connect(Session.zoom_in)
 	%ZoomOut.pressed.connect(Session.zoom_out)
 	%ZoomFit.pressed.connect(Session.zoom_to_fit)
 
 	%ImportAudio.pressed.connect(Session.request_import)
 	%AddTrack.get_popup().id_pressed.connect(_on_add_track_id_pressed)
+
+	_update_undo_buttons()
+
+
+## same idea as the Edit menu in main.gd: greyed out when there's nothing to undo/redo
+func _update_undo_buttons() -> void:
+	var history := Session.history
+	%Undo.disabled = not history.has_undo()
+	%Redo.disabled = not history.has_redo()
+	%Undo.tooltip_text = "Undo " + history.get_current_action_name() if history.has_undo() else "Undo"
+	%Redo.tooltip_text = "Redo " + history.get_action_name(history.get_current_action() + 1) if history.has_redo() else "Redo"
 
 
 ## item ids match TrackData.Kind: 0 = audio, 1 = instrument

@@ -61,24 +61,49 @@ var selected_track: TrackData = null:
 ## when on, dragged clips land on the nearest beat. the checkbox in the bottom bar sets this
 var snap_to_beat: bool = false
 
+## the undo steps. each one holds the song from before and after an edit
+var history := UndoRedo.new()
+
 var _clipboard: ClipData = null # copy of the last cut/copied clip. null until something gets copied
 var _clipboard_track: TrackData = null # where it was copied from, so paste has a track when nothing's selected
+
+
+## UndoRedo isnt a node, so it has to be freed by hand
+func _exit_tree() -> void:
+	history.free()
 
 
 #region Project
 
 func open_project(new_project: ProjectData) -> void:
 	project = new_project
+	history.clear_history() # the old project's undo steps dont belong to this one
 	project_changed.emit(project)
 
 
 ## adds an empty track at the bottom, named like "Audio 3" or something
 func add_new_track(kind: TrackData.Kind) -> void:
+	var before := snapshot()
+	project.add_track(make_track(kind))
+	save_undo_step("Add Track", before)
+
+
+## the track's Delete button. undo brings it back with its clips
+func remove_track(track: TrackData) -> void:
+	var before := snapshot()
+	project.remove_track(track)
+	if selected_track == track:
+		selected_track = null
+	save_undo_step("Delete Track", before)
+
+
+## a new empty track that isnt added yet, so import and record can add it in the same undo step as their clip
+func make_track(kind: TrackData.Kind) -> TrackData:
 	var track := TrackData.new()
 	track.kind = kind
 	var label := "Audio" if kind == TrackData.Kind.AUDIO else "Instrument"
 	track.name = "%s %d" % [label, project.tracks.size() + 1]
-	project.add_track(track)
+	return track
 
 #endregion
 
@@ -124,10 +149,11 @@ func request_import() -> void:
 	import_requested.emit()
 
 
-## clip_view calls this when a drag/trim ends. same warning thing as request_open_clip
-func report_clip_moved(clip: ClipData) -> void:
+## clip_view calls this when a drag/trim ends, so the whole drag is one undo step. same warning thing as request_open_clip
+func report_clip_moved(clip: ClipData, before: Dictionary, action_name: String) -> void:
 	clear_under(clip)
 	song_length_changed.emit()
+	save_undo_step(action_name, before)
 
 #endregion
 
@@ -143,9 +169,10 @@ func snap(seconds: float) -> float:
 
 
 ## takes the selected clip off whatever track its on
-func delete_selected() -> void:
+func delete_selected(action_name: String = "Delete Clip") -> void:
 	if selected_clip == null:
 		return
+	var before := snapshot()
 	for track: TrackData in project.tracks:
 		if selected_clip in track.clips:
 			track.remove_clip(selected_clip)
@@ -153,6 +180,7 @@ func delete_selected() -> void:
 	# clear it even if no track had it (its track might have been deleted already)
 	selected_clip = null
 	song_length_changed.emit()
+	save_undo_step(action_name, before)
 
 
 ## cuts the selected clip in two at the playhead. the original becomes the left half, and the right
@@ -167,9 +195,11 @@ func split_selected() -> void:
 	if track == null:
 		return
 
+	var before := snapshot()
 	var right_half := clip.split_at(at)
 	track.add_clip(right_half)
 	selected_clip = right_half
+	save_undo_step("Split Clip", before)
 
 
 ## keeps a copy of the selected clip for paste. a copy and not the clip itself, so changing or
@@ -183,7 +213,7 @@ func copy_selected() -> void:
 
 func cut_selected() -> void:
 	copy_selected()
-	delete_selected()
+	delete_selected("Cut Clip")
 
 
 ## puts a copy of the clipboard at the playhead, on the selected track
@@ -197,6 +227,7 @@ func paste() -> void:
 	# note clips only go on instrument tracks and audio clips only on audio tracks
 	if (_clipboard is NoteClipData) != (track.kind == TrackData.Kind.INSTRUMENT):
 		return
+	var before := snapshot()
 	# copy again so pasting twice gives two separate clips, not the same one twice
 	var clip := _clipboard.duplicate(true) as ClipData
 	clip.start = Transport.position
@@ -204,6 +235,7 @@ func paste() -> void:
 	clear_under(clip) # the pasted clip wins, anything it lands on gets cut away
 	selected_clip = clip
 	song_length_changed.emit() # pasting past the end makes the song longer
+	save_undo_step("Paste Clip", before)
 
 
 ## a copy of the selected clip placed right after it, on the same track
@@ -213,12 +245,14 @@ func duplicate_selected() -> void:
 	var track := _track_of(selected_clip)
 	if track == null:
 		return
+	var before := snapshot()
 	var copy := selected_clip.duplicate(true) as ClipData
 	copy.start = selected_clip.end
 	track.add_clip(copy)
 	clear_under(copy) # the copy wins, anything it lands on gets cut away
 	selected_clip = copy
 	song_length_changed.emit()
+	save_undo_step("Duplicate Clip", before)
 
 
 ## makes "clip" win over any other clip its sitting on top of on the same track: the covered parts of
@@ -250,18 +284,150 @@ func import_audio(path: String) -> void:
 	var clip := AudioClipData.from_file(path)
 	if clip == null:
 		return # not a file godot can read, from_file already printed why
+	var before := snapshot()
 	var track := selected_track
 	# the selected track might have been deleted since, same check as paste
 	if track == null or track.kind != TrackData.Kind.AUDIO or not track in project.tracks:
-		add_new_track(TrackData.Kind.AUDIO)
-		track = project.tracks[-1] # add_new_track always adds at the bottom
+		track = make_track(TrackData.Kind.AUDIO)
+		project.add_track(track)
 	clip.start = Transport.position
 	track.add_clip(clip)
 	clear_under(clip) # the imported clip wins, same as paste
 	selected_clip = clip
 	song_length_changed.emit() # a long file can make the song longer
+	save_undo_step("Import Audio", before)
+
+
+## an empty instrument clip on track at `at` for the piano roll to fill in. one bar long, or shorter if
+## the next clip starts sooner so it doesnt cut into it
+func add_note_clip(track: TrackData, at: float) -> void:
+	var before := snapshot()
+	var length := 60.0 / project.bpm * project.beats_per_bar
+	for other: ClipData in track.clips:
+		if other.start > at:
+			length = minf(length, other.start - at)
+	var clip := NoteClipData.new()
+	clip.name = track.name
+	clip.start = at
+	clip.length = length
+	track.add_clip(clip)
+	selected_clip = clip
+	song_length_changed.emit()
+	save_undo_step("Add Clip", before)
 
 #endregion
+
+
+#region Undo and redo
+
+func undo() -> void:
+	history.undo()
+
+
+func redo() -> void:
+	history.redo()
+
+
+## copy of the song for undo: tempo, tracks with their settings, and where each clip sits. the tracks and
+## clips themselves arent copied, so undo puts the same ones back and the ui showing them stays hooked up
+func snapshot() -> Dictionary:
+	var tracks: Array[Dictionary] = []
+	for track: TrackData in project.tracks:
+		var clips: Array[Dictionary] = []
+		for clip: ClipData in track.clips:
+			clips.append(_clip_snapshot(clip))
+		tracks.append({
+			track = track,
+			name = track.name,
+			volume_db = track.volume_db,
+			pan = track.pan,
+			muted = track.muted,
+			solo = track.solo,
+			effects = track.effects.duplicate(),
+			clips = clips,
+		})
+	return {bpm = project.bpm, tracks = tracks}
+
+
+## saves one undo step from before to now, skipped if nothing changed. merge squashes a slider drag into one step
+func save_undo_step(action_name: String, before: Dictionary, merge: bool = false) -> void:
+	var after := snapshot()
+	if after == before:
+		return
+	history.create_action(action_name, UndoRedo.MERGE_ENDS if merge else UndoRedo.MERGE_DISABLE)
+	history.add_do_method(_restore.bind(after))
+	history.add_undo_method(_restore.bind(before))
+	history.commit_action(false) # false since the edit already happened
+
+#endregion
+
+
+## one clip for snapshot(). note clips copy their notes too, since trims and splits actually delete notes
+func _clip_snapshot(clip: ClipData) -> Dictionary:
+	var values := {clip = clip, name = clip.name, start = clip.start, length = clip.length, offset = clip.offset}
+	if clip is NoteClipData:
+		values.notes = (clip as NoteClipData).notes.duplicate(true) # true = deep copy
+	return values
+
+
+## puts the song back the way it was in a snapshot()
+func _restore(saved: Dictionary) -> void:
+	project.bpm = saved.bpm
+	var saved_tracks: Array[TrackData] = []
+	for values: Dictionary in saved.tracks:
+		saved_tracks.append(values.track)
+	# drop tracks that werent there yet, then put missing ones back in their old spot
+	for track: TrackData in project.tracks.duplicate():
+		if not track in saved_tracks:
+			project.remove_track(track)
+	for i in saved.tracks.size():
+		var values: Dictionary = saved.tracks[i]
+		var track: TrackData = values.track
+		# before re-adding, so its row gets built with the right clips
+		_restore_track(track, values)
+		if not track in project.tracks:
+			project.add_track(track, i)
+	# cant keep something selected that just got taken away
+	if selected_clip and _track_of(selected_clip) == null:
+		selected_clip = null
+	if selected_track and not selected_track in project.tracks:
+		selected_track = null
+	song_length_changed.emit()
+
+
+func _restore_track(track: TrackData, values: Dictionary) -> void:
+	track.name = values.name
+	track.volume_db = values.volume_db
+	track.pan = values.pan
+	track.muted = values.muted
+	track.solo = values.solo
+	if track.effects != values.effects:
+		track.set_effects(values.effects)
+	var saved_clips: Array[ClipData] = []
+	for clip_values: Dictionary in values.clips:
+		saved_clips.append(clip_values.clip)
+	# same as the tracks: drop new clips, bring back missing ones
+	for clip: ClipData in track.clips.duplicate():
+		if not clip in saved_clips:
+			track.remove_clip(clip)
+	for clip_values: Dictionary in values.clips:
+		var clip: ClipData = clip_values.clip
+		_restore_clip(clip, clip_values) # values first so it shows up in the right spot
+		if not clip in track.clips:
+			track.add_clip(clip)
+
+
+func _restore_clip(clip: ClipData, values: Dictionary) -> void:
+	clip.name = values.name
+	clip.start = values.start
+	clip.length = values.length
+	clip.offset = values.offset
+	if values.has("notes"):
+		var note_clip := clip as NoteClipData
+		# assign so the piano roll keeps the same array, copied so later edits dont touch the saved notes
+		var saved_notes: Array = values.notes
+		note_clip.notes.assign(saved_notes.duplicate(true))
+		note_clip.notes_dirty = true
 
 
 ## the track a clip is on, or null if its not on one (like its track got deleted)

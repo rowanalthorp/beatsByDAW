@@ -33,13 +33,14 @@ var _preview_pitch := -1
 var _resize_note := -1
 var _move_note := -1
 var _grab_beat_offset := 0.0
+var _erasing := false # right mouse held, erases every note it passes over
 
 ## Drum lanes to match the current drum sounds
 # hihat, snare and kick
 const DRUM_LANES: Array[int] = [42, 38, 36]
 const DRUM_NAMES: Array[String] = ["Hihat", "Snare", "Kick"]
 const DRUM_ROW_HEIGHT := 64.0
- 
+
 var drum_mode := false:
 	set(value):
 		drum_mode = value
@@ -88,7 +89,10 @@ func _gui_input(event: InputEvent) -> void:
 				return
 			var idx := _note_at(pos)
 			if idx == -1:
-				idx = _add_note(_beat_at(pos.x), _snap_pitch(_pitch_at(pos.y)))
+				var pitch := _pitch_at(pos.y)
+				if not _in_scale(pitch):
+					return # out of key row, nothing gets placed
+				idx = _add_note(_beat_at(pos.x), pitch)
 				notes_changed.emit()
 				_move_note = idx
 				_grab_beat_offset = _beat_at(pos.x) - notes[idx].start
@@ -101,11 +105,8 @@ func _gui_input(event: InputEvent) -> void:
 			preview_note_on.emit(notes[idx].pitch)
 		elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
 			accept_event()
-			var idx := _note_at(mb.position)
-			if idx != -1:
-				notes.remove_at(idx)
-				notes_changed.emit()
-				queue_redraw()
+			_erasing = true
+			_erase_at(mb.position)
 	elif event is InputEventMouseMotion:
 		# Cursor hints, resize on the right edge and move on the body
 		var idx := _note_at(event.position)
@@ -121,6 +122,9 @@ func _gui_input(event: InputEvent) -> void:
 # when the cursor leaves the control.
 func _input(event: InputEvent) -> void:
 	var mb := event as InputEventMouseButton
+	if mb and mb.button_index == MOUSE_BUTTON_RIGHT and not mb.pressed:
+		_erasing = false
+		return
 	if mb and mb.button_index == MOUSE_BUTTON_LEFT and not mb.pressed:
 		if _preview_pitch != -1:
 			preview_note_off.emit(_preview_pitch)
@@ -132,6 +136,9 @@ func _input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseMotion:
 		var pos := get_local_mouse_position()
+		if _erasing:
+			_erase_at(pos)
+			return
 		if _resize_note != -1:
 			if _resize_note >= notes.size():
 				_resize_note = -1
@@ -175,7 +182,7 @@ func _draw() -> void:
 					Rect2(KEY_WIDTH, _y_of(pitch), grid_w, ROW_HEIGHT),
 					Color(0.0, 0.0, 0.0, 0.22))
 	# Row separators, stronger line at the top of the C row.
-	
+
 	for r in range(rows + 1):
 		var y := r * _row_h()
 		var strong := not drum_mode and r > 0 and (PITCH_HIGH - r) % 12 == 0
@@ -306,6 +313,14 @@ func _add_note(beat: float, pitch: int) -> int:
 		"velocity": 1.0,
 	})
 	return notes.size() - 1
+
+
+func _erase_at(pos: Vector2) -> void:
+	var idx := _note_at(pos)
+	if idx != -1:
+		notes.remove_at(idx)
+		notes_changed.emit()
+		queue_redraw()
 
 
 func _note_at(pos: Vector2) -> int:

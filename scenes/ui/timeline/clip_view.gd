@@ -11,6 +11,7 @@ var clip: ClipData
 
 var _drag_mode := DragMode.NONE
 var _grab_x := 0.0 # px from the thing being dragged (clip's left edge for move, the edge itself for trims) to the mouse
+var _before_drag: Dictionary # song at mouse down, so the whole drag is one undo step
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -25,7 +26,9 @@ func _gui_input(event: InputEvent) -> void:
 	accept_event()
 	if not click.pressed:
 		if _drag_mode != DragMode.NONE:
-			Session.report_clip_moved(clip) # cut away whatever its now on top of, and the song length may have changed
+			# clean up overlaps and save the drag as one undo step
+			var action_name := "Move Clip" if _drag_mode == DragMode.MOVE else "Trim Clip"
+			Session.report_clip_moved(clip, _before_drag, action_name)
 		_drag_mode = DragMode.NONE # let go, drag's done
 		return
 	# double_click is godot's own flag for a quick second click, so we dont have to time clicks ourselves
@@ -34,6 +37,7 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	Session.selected_clip = clip
 	_drag_mode = _mode_at(click.position.x)
+	_before_drag = Session.snapshot()
 	# remember where on the dragged thing we grabbed, so it doesnt jump to line up with the mouse
 	_grab_x = click.position.x - (size.x if _drag_mode == DragMode.TRIM_RIGHT else 0.0)
 
