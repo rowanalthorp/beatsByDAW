@@ -12,6 +12,8 @@ config_version=5
 
 config/name="beatsByDaw"
 run/main_scene="uid://be51868ac2ysp"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="beatsByDaw"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 

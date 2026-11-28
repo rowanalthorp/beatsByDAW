@@ -1,7 +1,7 @@
 extends Button
 ## the toolbar's Record button: records the microphone onto the selected audio track, press again to stop
 
-var cache_folder := "user://recordings/" # user:// since res:// is read-only once the project is exported, same spot the instrument renders go
+var cache_folder := "user://cache/recordings/" # user:// since res:// is read-only once the game is exported, same spot the instrument renders go
 var active := false
 
 var record_effect: AudioEffectRecord
