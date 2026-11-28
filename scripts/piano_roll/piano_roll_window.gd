@@ -66,7 +66,16 @@ func _ready() -> void:
 
 	_roll.beats_per_bar = _project.beats_per_bar
 	_bpm_spin.value = _project.bpm
-	_bpm_spin.value_changed.connect(func(v): _project.bpm = v)
+	_bpm_spin.value_changed.connect(_on_bpm_changed)
+
+
+## tempo changes how many beats the clip's seconds cover, so the usable region moves with it
+func _on_bpm_changed(v: float) -> void:
+	_project.bpm = v
+	if _clip != null:
+		_roll.usable_beats = _clip.length / (60.0 / v)
+		_roll.bars = maxi(1, ceili(_roll.usable_beats / _roll.beats_per_bar))
+		_roll.queue_redraw()
 
 
 func _toggle_play() -> void:
@@ -136,14 +145,20 @@ func open_clip(clip: NoteClipData) -> void:
 	# enough bars to cover the whole clip. seconds per bar = 60 / bpm * beats per bar
 	var bar_seconds := 60.0 / _project.bpm * _project.beats_per_bar
 	_roll.bars = ceili(clip.length / bar_seconds)
+	# the grid fills whatever space it gets, so the clip's real length is what bounds notes
+	_roll.usable_beats = clip.length / (60.0 / _project.bpm)
 	_bpm_spin.set_value_no_signal(_project.bpm) # tempo may have changed in the bottom bar since last open
 	_roll.queue_redraw()
-	# size the window to fit the toolbar and the clip's bars, so theres no empty grey past the last bar
+	# size the window to fit the toolbars and the roll's actual size, so theres no empty
+	# grey past the last bar or below the grid
 	var toolbar_width: float = maxf(
 		$VBox/Toolbar.get_combined_minimum_size().x,
 		$VBox/TuneBar.get_combined_minimum_size().x)
+	var chrome_h: float = ($VBox/Toolbar.get_combined_minimum_size().y
+		+ $VBox/TuneBar.get_combined_minimum_size().y + 8.0)
 	var roll_width := _roll.custom_minimum_size.x + 16.0 # + room for the vertical scroll bar
-	var wanted := Vector2i(int(maxf(toolbar_width, roll_width)), 660)
+	var roll_height := _roll.custom_minimum_size.y + 16.0 # + room for the horizontal scroll bar
+	var wanted := Vector2i(int(maxf(toolbar_width, roll_width)), int(minf(chrome_h + roll_height, 660.0)))
 	# clamped version shrinks it to at most 85% of the main window if it doesnt fit,
 	# so the title bar stays on screen instead of popping out the top
 	popup_centered_clamped(wanted, 0.85)
