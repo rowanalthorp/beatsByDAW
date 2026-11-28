@@ -77,7 +77,7 @@ func _show_effects() -> void:
 		var slot := EFFECT_SLOT_SCENE.instantiate() as EffectSlot
 		%EffectList.add_child(slot)
 		slot.setup(effect)
-		slot.remove_requested.connect(_track.remove_effect)
+		slot.remove_requested.connect(_on_remove_requested)
 
 
 ## the menu items are named the same as the types in EffectData, so the item text is the type

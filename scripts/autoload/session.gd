@@ -297,6 +297,24 @@ func import_audio(path: String) -> void:
 	song_length_changed.emit() # a long file can make the song longer
 	save_undo_step("Import Audio", before)
 
+
+## an empty instrument clip on track at `at` for the piano roll to fill in. one bar long, or shorter if
+## the next clip starts sooner so it doesnt cut into it
+func add_note_clip(track: TrackData, at: float) -> void:
+	var before := snapshot()
+	var length := 60.0 / project.bpm * project.beats_per_bar
+	for other: ClipData in track.clips:
+		if other.start > at:
+			length = minf(length, other.start - at)
+	var clip := NoteClipData.new()
+	clip.name = track.name
+	clip.start = at
+	clip.length = length
+	track.add_clip(clip)
+	selected_clip = clip
+	song_length_changed.emit()
+	save_undo_step("Add Clip", before)
+
 #endregion
 
 

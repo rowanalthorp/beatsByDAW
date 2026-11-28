@@ -106,10 +106,15 @@ func _on_delete_pressed() -> void:
 func _on_lane_gui_input(event: InputEvent) -> void:
 	var click := event as InputEventMouseButton
 	if click and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
+		# song time where you clicked. same math as clicking the ruler
+		var at := Session.snap(Session.scroll_seconds + click.position.x / Session.pixels_per_second)
+		# double-click on an instrument track makes an empty clip there, kinda like ableton
+		if click.double_click and track.kind == TrackData.Kind.INSTRUMENT:
+			Session.add_note_clip(track, at)
+			return
 		Session.selected_clip = null
 		Session.selected_track = track
-		# move the playhead to where you clicked, so paste knows where to go. same math as clicking the ruler
-		Transport.seek(Session.snap(Session.scroll_seconds + click.position.x / Session.pixels_per_second))
+		Transport.seek(at) # move the playhead there, so paste knows where to go
 
 
 ## a clip was deleted off this track, so get rid of its block too
